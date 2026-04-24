@@ -69,19 +69,34 @@ chess_cubist/
 
 1. User lands on the app — sees a chessboard and a text input
 2. They type a philosophy: *"plays like a coward — avoids all exchanges, retreats pieces, never attacks"*
-3. Click **Generate** → spinner → generated Python code appears in the sidebar
-4. Click **Play** → choose color → game starts via WebSocket
-5. User drags a piece → move sent to backend → Rust engine runs search with the generated eval → best move streamed back → board updates
-6. Sidebar shows: `depth 9 | score −0.4 | pv: Nf3 e6 d4 d5...`
-7. User can click **Iterate**: *"now make it willing to sacrifice pawns for open files"* → Claude regenerates → new game with updated philosophy
-8. Previous versions are listed in a history panel — user can replay v1 vs v2
+3. Click **Generate** → Claude first interprets the input as the nearest chess-expressible concept and shows it: *"Interpreted as: maximize king safety and pawn structure integrity, penalize open files near own king, avoid piece trades"* — user can adjust before proceeding
+4. Spinner → generated Python code appears in the sidebar
+5. Code passes the validation pipeline (see below); if any gate fails, the UI shows which gate failed and suggests a rephrasing
+6. Click **Play** → choose color → game starts via WebSocket
+7. User drags a piece → move sent to backend → Rust engine runs search with the generated eval → best move streamed back → board updates
+8. Sidebar shows: `depth 9 | score −0.4 | pv: Nf3 e6 d4 d5...`
+9. User can click **Iterate**: *"now make it willing to sacrifice pawns for open files"* → Claude regenerates → new game with updated philosophy
+10. Previous versions are listed in a history panel — user can replay v1 vs v2
 
 ---
 
-## The Claude Prompt
+## The Claude Prompts
 
-Documented in `prompts/eval_generator.md`. Template:
+Documented in `prompts/eval_generator.md`. Two-step process:
 
+**Step 1 — Interpretation prompt** (shown to user before codegen):
+```
+The user wants a chess engine with this philosophy: "{user_description}"
+
+Restate this as a concrete chess evaluation strategy in one sentence.
+Use only chess concepts (piece activity, king safety, pawn structure, material,
+mobility, open files, outposts, etc). If the input is non-chess (e.g. "funniest
+moves", "most chaotic"), map it to the nearest meaningful chess analogue.
+
+Return ONLY the one-sentence restatement. No explanation.
+```
+
+**Step 2 — Codegen prompt** (runs after user confirms the interpretation):
 ```
 You are a chess engine programmer. Write a Python function:
 
@@ -90,12 +105,13 @@ You are a chess engine programmer. Write a Python function:
 that returns a centipawn score from White's perspective (positive = White is better).
 
 The function must embody this philosophy exactly:
-{user_description}
+{interpreted_description}
 
 Hard rules:
 - Import only: chess, math
-- No network calls, no file I/O, no side effects
+- No random, no time, no network calls, no file I/O, no side effects
 - Must not raise exceptions on any legal chess.Board state
+- Must be deterministic — same board must always return the same score
 - Return an integer (centipawns)
 - No explanation — return ONLY the function definition
 
@@ -106,15 +122,17 @@ Reference material counts (centipawns): pawn=100, knight=320, bishop=330, rook=5
 
 ## Eval Validation Pipeline
 
-Before any generated eval is used in a game it must pass three gates:
+Before any generated eval is used in a game it must pass five gates in order:
 
 | Gate | What it checks | How |
 |------|---------------|-----|
 | Syntax | Parses as valid Python | `ast.parse()` |
-| Safety | No banned imports/calls (os, subprocess, open, eval, exec) | AST node visitor |
-| Sanity | Starting position ≈ 0 ±50cp; clearly winning position > 200cp | Run on 3 canonical FENs |
+| Safety | No banned names: `os`, `subprocess`, `open`, `eval`, `exec`, `random`, `time`, `import` beyond `chess`/`math` | AST node visitor |
+| Sanity | Starting position ≈ 0 ±50cp; white up a queen > 200cp; black up a queen < -200cp | Run on 3 canonical FENs |
+| Determinism | Same FEN evaluated twice returns identical score | Run eval(pos) == eval(pos) on 3 positions |
+| Variance | Std dev across 10 diverse positions (opening, midgame, endgame, imbalanced) > 50cp | Catches constants and near-random evals |
 
-Failure at any gate surfaces an error in the UI with the raw Claude output — the user can refine their description and regenerate.
+Failure at any gate surfaces a clear error in the UI: which gate failed, the raw Claude output, and a suggested rephrasing. The user never sees a broken engine mid-game.
 
 ---
 
@@ -162,7 +180,9 @@ Same as original plan. Deliverables:
 | Perft depth 4 | Validates move generation correctness |
 | Mate-in-N (20 puzzles) | Verifies search finds forced mates |
 | Eval sanity (3 canonical FENs) | Generated evals return sane centipawn scores |
-| Generator pipeline | Claude output passes syntax + safety + sanity gates |
+| Eval determinism | Same position always returns same score |
+| Eval variance (10 diverse FENs) | Eval is position-sensitive, not constant or random |
+| Generator pipeline | Claude output passes all five validation gates |
 | Baseline comparison | Generated eval vs. classic.py in 10-game self-play |
 
 ---
