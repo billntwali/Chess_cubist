@@ -5,6 +5,8 @@
 __pycache__/
 *.pyc
 eval/generated/*.py
+.pytest_cache/
+.ipynb_checkpoints/
 
 # Rust build artifacts
 core/target/
@@ -15,3 +17,9 @@ frontend/dist/
 
 # macOS
 .DS_Store
+
+# Local Claude/app state
+.claude/settings.json
+
+# Generated tournament artifacts
+tournament/results/*.json

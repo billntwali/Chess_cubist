@@ -9,6 +9,45 @@ import anthropic
 _client = anthropic.Anthropic(timeout=30.0)
 
 BANNED_NAMES = {"os", "subprocess", "open", "eval", "exec", "random", "time", "__import__"}
+MUTATING_BOARD_METHODS = {
+    "push",
+    "pop",
+    "push_uci",
+    "push_san",
+    "set_fen",
+    "set_board_fen",
+    "set_piece_at",
+    "remove_piece_at",
+    "clear",
+    "clear_board",
+    "reset",
+    "reset_board",
+}
+MUTATING_BOARD_ATTRS = {
+    "turn",
+    "ep_square",
+    "castling_rights",
+    "halfmove_clock",
+    "fullmove_clock",
+    "chess960",
+}
+DISALLOWED_SHADOW_NAMES = {
+    "int",
+    "float",
+    "str",
+    "bool",
+    "list",
+    "dict",
+    "set",
+    "tuple",
+    "sum",
+    "max",
+    "min",
+    "abs",
+    "len",
+    "round",
+    "sorted",
+}
 
 INTERPRET_PROMPT = """\
 The user wants a chess engine with this personality: "{description}"
@@ -34,8 +73,10 @@ Hard rules:
 - Python 3.9 compatible syntax only (no match statements, no X | Y union types)
 - Import only: chess, math
 - Do NOT call board.push() or board.pop() — treat the board as read-only
+- Do NOT mutate board state in any way (no board.turn assignment, no set_fen, etc.)
 - Do NOT use chess.Move.null() or any null move tricks
 - No random, time, network, file I/O, or side effects
+- Do not shadow Python built-ins (e.g., never assign to int, list, dict, sum, max)
 - Must not raise exceptions on any legal board state
 - Deterministic — same board always returns same score
 - Return an integer
@@ -59,10 +100,15 @@ Common mistakes to avoid:
   GOOD: king_sq = board.king(chess.WHITE); if king_sq is not None: ...
   BAD:  score += board.pieces(...)          # SquareSet can't be added to int
   GOOD: score += len(board.pieces(...))
+  BAD:  board.turn = chess.BLACK            # mutates board state
+  GOOD: compute white and black features directly without mutating board
 
 Material: pawn=100, knight=320, bishop=330, rook=500, queen=900, king=0
 IMPORTANT: Never use board.piece_map() — it includes kings and will cause KeyError.
 Instead use board.pieces(piece_type, color) for each piece type explicitly.
+IMPORTANT: Every heuristic should be computed as WHITE minus BLACK (relative advantage),
+not as absolute totals. The starting position should score near 0 (roughly within +/-150cp).
+Keep typical score magnitudes reasonable (usually within +/-3000cp).
 
 Bonus sizing — this is critical for the personality to actually show up in play:
 - Personality bonuses must be LARGE enough to compete with material (50–150cp per feature)
@@ -79,6 +125,9 @@ Rewrite the evaluate() function fixing the error. Key constraints:
 - Do NOT use board.piece_map() — it includes kings and causes KeyError: 6
 - Do NOT iterate over board.king() — it returns an int, not iterable
 - Do NOT add SquareSets to ints — use len(board.pieces(...)) instead
+- Do NOT mutate board state (no board.turn assignment, no set_fen, no push/pop)
+- Ensure all terms are relative (white advantage - black advantage), not absolute totals
+- Starting position must evaluate near 0 (within +/-300cp)
 - Use board.pieces(piece_type, color) for each piece type explicitly
 - Use only Python 3.9 syntax
 - Return ONLY the function."""
@@ -325,6 +374,26 @@ def _quick_check(code: str):
     except Exception as e:
         return f"Crashed on starting position: {e}"
 
+    # Early sanity + determinism checks
+    sanity_cases = [
+        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", -300, 300),
+        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1", -300, 300),
+        ("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 200, None),
+        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", None, -200),
+    ]
+    for fen, lo, hi in sanity_cases:
+        b = chess.Board(fen)
+        try:
+            s1 = int(fn(b))
+            s2 = int(fn(b))
+        except Exception as e:
+            return f"Sanity crash on '{fen}': {e}"
+        if s1 != s2:
+            return f"Determinism: same position returned {s1} then {s2} — do not use mutable state or closures"
+        if lo is not None and s1 < lo:
+            return f"Sanity: expected >{lo}cp, got {s1} on '{fen}'"
+        if hi is not None and s1 > hi:
+            return f"Sanity: expected <{hi}cp, got {s1} on '{fen}'"
     return None
 
 
@@ -340,6 +409,26 @@ def validate(code: str) -> tuple[bool, str]:
     for node in ast.walk(tree):
         if isinstance(node, ast.Name) and node.id in BANNED_NAMES:
             return False, f"Safety: banned name '{node.id}'"
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store) and node.id in DISALLOWED_SHADOW_NAMES:
+            return False, f"Safety: cannot assign to built-in name '{node.id}'"
+        if isinstance(node, ast.arg) and node.arg in DISALLOWED_SHADOW_NAMES:
+            return False, f"Safety: function arg shadows built-in name '{node.arg}'"
+        if (
+            isinstance(node, ast.Attribute)
+            and isinstance(node.ctx, ast.Store)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == "board"
+            and node.attr in MUTATING_BOARD_ATTRS
+        ):
+            return False, f"Safety: cannot mutate board attribute '{node.attr}'"
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "board"
+            and node.func.attr in MUTATING_BOARD_METHODS
+        ):
+            return False, f"Safety: cannot call mutating board method '{node.func.attr}()'"
         if isinstance(node, ast.Import):
             for alias in node.names:
                 if alias.name not in ("chess", "math"):
@@ -362,6 +451,7 @@ def validate(code: str) -> tuple[bool, str]:
     # Gate 3: Sanity — canonical positions
     sanity_cases = [
         ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", -300, 300),   # start ≈ 0
+        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1", -300, 300),   # same board, black to move
         ("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 200, None),  # black missing queen → white winning
         ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", None, -200), # white missing queen → black winning
     ]
@@ -382,6 +472,39 @@ def validate(code: str) -> tuple[bool, str]:
         b = chess.Board(fen)
         if fn(b) != fn(b):
             return False, "Determinism: same position returned different scores"
+
+    # Gate 4b: Perspective consistency (prevents turn/color bias)
+    # Eval should be mostly invariant to whose turn it is on the same board,
+    # and approximately anti-symmetric under color mirroring.
+    try:
+        start_w = int(fn(chess.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")))
+        start_b = int(fn(chess.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")))
+    except Exception as e:
+        return False, f"Perspective consistency error: {e}"
+    if abs(start_w - start_b) > 120:
+        return False, (
+            "Perspective consistency: same starting board scores too differently by side to move "
+            f"({start_w} vs {start_b})"
+        )
+
+    symmetry_fens = [
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+        "r1bqkbnr/pppp1ppp/2n5/4p3/3P4/2N5/PPP1PPPP/R1BQKBNR b KQkq - 2 3",
+        "8/5pkp/6p1/8/8/6P1/5PKP/8 w - - 0 1",
+    ]
+    for fen in symmetry_fens:
+        try:
+            b = chess.Board(fen)
+            mirrored = b.mirror()
+            s = int(fn(b))
+            ms = int(fn(mirrored))
+        except Exception as e:
+            return False, f"Perspective consistency symmetry error: {e}"
+        if abs(s + ms) > 160:
+            return False, (
+                "Perspective consistency: color-mirrored position is not approximately opposite "
+                f"({s} vs {ms})"
+            )
 
     # Gate 5: Variance across 10 diverse positions
     variance_fens = [
