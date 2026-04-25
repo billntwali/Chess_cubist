@@ -13,10 +13,10 @@ TEST_PHILOSOPHY = "a cowardly engine that avoids all trades and retreats pieces"
 def run() -> CheckResult:
     start = time.time()
 
-    if not os.environ.get("GEMINI_API_KEY"):
+    if not os.environ.get("ANTHROPIC_API_KEY"):
         return CheckResult(
             "generator_check", True,
-            "SKIPPED — GEMINI_API_KEY not set",
+            "SKIPPED — ANTHROPIC_API_KEY not set",
             (time.time() - start) * 1000,
             data={"skipped": True},
         )

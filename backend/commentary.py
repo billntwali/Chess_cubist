@@ -1,8 +1,7 @@
-"""Post-move narration: Gemini describes each engine move in the philosophy's voice."""
-import os
-from google import genai
+"""Post-move narration: Claude describes each engine move in the philosophy's voice."""
+import anthropic
 
-_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY", ""))
+_client = anthropic.Anthropic()
 
 COMMENTARY_PROMPT = """\
 Chess engine playing "{philosophy}" just played {san} in this position: {fen}
@@ -32,10 +31,11 @@ async def get_commentary(philosophy: str, move_uci: str, fen: str, eval_cp: int)
     )
 
     def _call():
-        response = _client.models.generate_content(
-            model="gemini-2.0-flash-lite",
-            contents=prompt,
+        msg = _client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=128,
+            messages=[{"role": "user", "content": prompt}],
         )
-        return response.text.strip()
+        return msg.content[0].text.strip()
 
     return await asyncio.to_thread(_call)
