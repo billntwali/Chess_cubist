@@ -21,6 +21,7 @@ export default function App() {
   const [tournamentStandings, setTournamentStandings] = useState<any[]>([]);
   const [tournamentRunning, setTournamentRunning] = useState(false);
   const [thinking, setThinking] = useState(false);
+  const [playerTurn, setPlayerTurn] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   function handleEvalReady(path: string, _code: string, desc: string) {
@@ -29,6 +30,7 @@ export default function App() {
     setGameId(null);
     setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     setCommentary([]);
+    setPlayerTurn(false);
     setWhiteProb(0.5);
     setEvalCp(0);
     setPv("");
@@ -46,6 +48,7 @@ export default function App() {
       const { game_id } = await res.json();
       setGameId(game_id);
 
+      setPlayerTurn(true);
       const ws = new WebSocket(`ws://${window.location.host}/ws/game/${game_id}`);
       ws.onmessage = (e) => {
         const data = JSON.parse(e.data);
@@ -57,6 +60,7 @@ export default function App() {
         if (data.depth) setDepth(data.depth);
         if (data.commentary) setCommentary((c) => [...c, data.commentary]);
         setThinking(false);
+        setPlayerTurn(true);
       };
       ws.onerror = () => alert("WebSocket connection failed — is the backend running?");
       wsRef.current = ws;
@@ -67,6 +71,7 @@ export default function App() {
 
   function handleMove(moveUci: string) {
     setThinking(true);
+    setPlayerTurn(false);
     wsRef.current?.send(JSON.stringify({ move: moveUci }));
   }
 
@@ -79,10 +84,17 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_eval_path: evalPath, user_name: philosophy.slice(0, 20) }),
       });
+      if (!res.ok) {
+        const text = await res.text();
+        alert(`Tournament failed: ${text}`);
+        return;
+      }
       const data = await res.json();
       setTournamentStandings(
         Object.entries(data.standings).map(([name, record]: [string, any]) => ({ name, ...record }))
       );
+    } catch (err) {
+      alert(`Tournament error: ${err}`);
     } finally {
       setTournamentRunning(false);
     }
@@ -117,6 +129,7 @@ export default function App() {
           fen={fen}
           playerColor="white"
           thinking={thinking}
+          playerTurn={playerTurn}
         />
         <EngineInfo depth={depth} evalCp={evalCp} pv={pv} />
         <SpectatorRoom gameId={gameId} viewerCount={viewerCount} />

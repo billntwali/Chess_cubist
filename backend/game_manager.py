@@ -62,8 +62,8 @@ class GameState:
             if line == token:
                 return lines
 
-    def get_best_move(self, movetime_ms: int = 500) -> tuple[str, int, str]:
-        """Return (best_move_uci, eval_cp, pv)."""
+    def get_best_move(self, movetime_ms: int = 500) -> tuple[str, int, str, int]:
+        """Return (best_move_uci, eval_cp, pv, depth)."""
         position_cmd = "position startpos"
         if self.moves:
             position_cmd += " moves " + " ".join(self.moves)
@@ -73,6 +73,7 @@ class GameState:
         best_move = ""
         eval_cp = 0
         pv = ""
+        depth = 0
 
         while True:
             line = self.engine_proc.stdout.readline().strip()
@@ -80,6 +81,8 @@ class GameState:
                 parts = line.split()
                 try:
                     eval_cp = int(parts[parts.index("cp") + 1])
+                    if "depth" in parts:
+                        depth = int(parts[parts.index("depth") + 1])
                     if "pv" in parts:
                         pv = " ".join(parts[parts.index("pv") + 1:])
                 except (ValueError, IndexError):
@@ -88,7 +91,7 @@ class GameState:
                 best_move = line.split()[1]
                 break
 
-        return best_move, eval_cp, pv
+        return best_move, eval_cp, pv, depth
 
     def stop(self):
         if self.engine_proc:
@@ -152,7 +155,7 @@ async def handle_move(game_id: str, move_uci: str, philosophy: str):
     pre_engine_fen = state.board.fen()
 
     # Ask the engine for its response
-    best_move, eval_cp, pv = await asyncio.to_thread(state.get_best_move)
+    best_move, eval_cp, pv, depth = await asyncio.to_thread(state.get_best_move)
     if not best_move or best_move == "0000":
         return
 
@@ -163,16 +166,18 @@ async def handle_move(game_id: str, move_uci: str, philosophy: str):
         pass
 
     # eval_cp is from the engine's perspective (engine plays Black).
-    # Negate so centipawns_to_prob receives White's perspective.
-    white_prob = centipawns_to_prob(-eval_cp)
+    # Convert to White's perspective so both white_prob and eval_cp share the same sign convention.
+    eval_cp_white = -eval_cp
+    white_prob = centipawns_to_prob(eval_cp_white)
     commentary = await get_commentary(philosophy, best_move, pre_engine_fen, eval_cp)
 
     payload = {
         "best_move": best_move,
         "fen": state.board.fen(),
-        "eval_cp": eval_cp,
+        "eval_cp": eval_cp_white,
         "white_prob": white_prob,
         "pv": pv,
+        "depth": depth,
         "commentary": commentary,
     }
 

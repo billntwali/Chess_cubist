@@ -54,6 +54,8 @@ def _read_until(proc: subprocess.Popen, token: str) -> list[str]:
             return lines
 
 
+MAX_GAME_MOVES = 150  # hard cap to prevent runaway games
+
 def _play_game(white_path: str, black_path: str, movetime_ms: int = 500) -> str:
     """Play one game, return 'white' | 'black' | 'draw'."""
     import chess
@@ -63,7 +65,7 @@ def _play_game(white_path: str, black_path: str, movetime_ms: int = 500) -> str:
     moves = []
 
     try:
-        while not board.is_game_over():
+        while not board.is_game_over(claim_draw=True) and len(moves) < MAX_GAME_MOVES:
             engine = white if board.turn == chess.WHITE else black
             pos_cmd = "position startpos" + (" moves " + " ".join(moves) if moves else "")
             engine.stdin.write(pos_cmd + "\n")
@@ -72,7 +74,10 @@ def _play_game(white_path: str, black_path: str, movetime_ms: int = 500) -> str:
 
             best_move = ""
             while True:
-                line = engine.stdout.readline().strip()
+                line = engine.stdout.readline()
+                if not line:  # EOF — engine process died
+                    break
+                line = line.strip()
                 if line.startswith("bestmove"):
                     best_move = line.split()[1]
                     break

@@ -8,9 +8,10 @@ interface Props {
   fen: string;
   playerColor: "white" | "black";
   thinking: boolean;
+  playerTurn: boolean;
 }
 
-export default function Board({ gameId, onMove, fen, playerColor, thinking }: Props) {
+export default function Board({ gameId, onMove, fen, playerColor, thinking, playerTurn }: Props) {
   const [displayFen, setDisplayFen] = useState(fen);
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [legalSquares, setLegalSquares] = useState<string[]>([]);
@@ -84,10 +85,10 @@ export default function Board({ gameId, onMove, fen, playerColor, thinking }: Pr
 
   return (
     <div className="board-wrapper">
-      {thinking && (
+      {(thinking || playerTurn) && (
         <div className="engine-thinking-bar">
           <span className="thinking-dot" />
-          Engine is thinking…
+          {thinking ? "Engine is thinking…" : "Your move"}
         </div>
       )}
       <Chessboard
