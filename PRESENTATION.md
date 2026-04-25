@@ -43,7 +43,7 @@ That's Chess Forge.
 
 1. **Interpret (Claude Haiku)** — Maps your description to a chess-expressible concept. "Paranoid coward" becomes: *"Maximizes king safety, penalizes open files near own king, avoids all trades."* Impossible inputs like "only move pawns" get redirected gracefully.
 
-2. **Generate (Claude Sonnet)** — Writes a Python `evaluate(board) -> int` function from scratch, live. The code appears on screen as it generates. This function decides how the engine values every position.
+2. **Generate (Claude Sonnet)** — Writes a Python `evaluate(board) -> int` function from scratch. This function decides how the engine values every position.
 
 3. **5-gate validation** — Before the engine touches a game: syntax, safety, sanity on canonical positions, determinism, variance. Any failure surfaces the exact error and prompts a rephrase.
 
