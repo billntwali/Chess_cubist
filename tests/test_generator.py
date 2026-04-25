@@ -1,5 +1,6 @@
 """Tests for the eval generator's 5-gate validation pipeline."""
 import pytest
+from eval import generator
 from eval.generator import validate
 
 VALID_EVAL = """
@@ -58,3 +59,111 @@ def test_constant_eval_caught():
 def test_random_banned():
     ok, err = validate(RANDOM_EVAL)
     assert not ok
+
+
+def test_fallback_eval_is_valid():
+    code = generator._fallback_eval_code("play like magnus carlsen", "Syntax error")
+    ok, err = validate(code)
+    assert ok, err
+
+
+def test_generate_falls_back_after_malformed_claude(monkeypatch):
+    class FakeMessage:
+        stop_reason = "end_turn"
+        content = [type("Content", (), {"text": "def evaluate(board):\nif True:\nreturn 0"})()]
+
+    class FakeMessages:
+        def create(self, **_kwargs):
+            return FakeMessage()
+
+    class FakeClient:
+        messages = FakeMessages()
+
+    monkeypatch.setattr(generator, "_client", FakeClient())
+
+    code = generator.generate("play like magnus carlsen", max_retries=1)
+    ok, err = validate(code)
+
+    assert ok, err
+    assert "Fallback eval" in code
+
+
+def test_generate_falls_back_after_truncated_claude(monkeypatch):
+    class FakeMessage:
+        stop_reason = "max_tokens"
+        content = [type("Content", (), {"text": "def evaluate(board):\n    if True:"})()]
+
+    class FakeMessages:
+        def create(self, **_kwargs):
+            return FakeMessage()
+
+    class FakeClient:
+        messages = FakeMessages()
+
+    monkeypatch.setattr(generator, "_client", FakeClient())
+
+    code = generator.generate("play like magnus carlsen", max_retries=0)
+    ok, err = validate(code)
+
+    assert ok, err
+    assert "Fallback eval" in code
+
+
+def test_generate_falls_back_after_api_error(monkeypatch):
+    class FakeMessages:
+        def create(self, **_kwargs):
+            raise TimeoutError("network timeout")
+
+    class FakeClient:
+        messages = FakeMessages()
+
+    monkeypatch.setattr(generator, "_client", FakeClient())
+
+    code = generator.generate("play like magnus carlsen", max_retries=1)
+    ok, err = validate(code)
+
+    assert ok, err
+    assert "Fallback eval" in code
+
+
+def test_interpret_falls_back_after_api_error(monkeypatch):
+    class FakeMessages:
+        def create(self, **_kwargs):
+            raise TimeoutError("network timeout")
+
+    class FakeClient:
+        messages = FakeMessages()
+
+    monkeypatch.setattr(generator, "_client", FakeClient())
+
+    interpreted = generator.interpret("play like magnus carlsen")
+
+    assert "magnus carlsen" in interpreted.lower()
+    assert "positional advantages" in interpreted
+
+
+def test_fallback_interpretation_has_prompt_specific_styles():
+    cases = {
+        "play like magnus carlsen": "Magnus Carlsen",
+        "play like a reckless attacker": "reckless attacker",
+        "only move pawns if possible": "pawn-driven strategist",
+        "play like a coward who avoids all trades": "defensively",
+    }
+
+    for prompt, expected in cases.items():
+        assert expected in generator._fallback_interpretation(prompt)
+
+
+def test_prompt_specific_fallback_evals_are_valid():
+    prompts = [
+        "play like magnus carlsen",
+        "play like a reckless attacker",
+        "only move pawns if possible",
+        "play like a coward who avoids all trades",
+    ]
+
+    for prompt in prompts:
+        interpreted = generator._fallback_interpretation(prompt)
+        code = generator._fallback_eval_code(interpreted, "forced fallback")
+        ok, err = validate(code)
+        assert ok, f"{prompt}: {err}"

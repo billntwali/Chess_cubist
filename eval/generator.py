@@ -6,7 +6,7 @@ import os
 import chess
 import anthropic
 
-_client = anthropic.Anthropic()
+_client = anthropic.Anthropic(timeout=30.0)
 
 BANNED_NAMES = {"os", "subprocess", "open", "eval", "exec", "random", "time", "__import__"}
 
@@ -40,6 +40,10 @@ Hard rules:
 - Deterministic — same board always returns same score
 - Return an integer
 - Return ONLY the function, no explanation
+- Every if/for/while/def block must have a complete indented body
+- Do not leave placeholders, ellipses, unfinished branches, or TODO comments
+- Keep the function under 180 lines
+- Prefer simple loops and helper constants over deeply nested logic
 
 Useful read-only board methods:
   board.pieces(piece_type, color)  -> SquareSet (iterable of square ints)
@@ -82,12 +86,49 @@ Rewrite the evaluate() function fixing the error. Key constraints:
 
 def interpret(description: str) -> str:
     """Step 1: map user description to a chess-expressible concept."""
-    msg = _client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=256,
-        messages=[{"role": "user", "content": INTERPRET_PROMPT.format(description=description)}],
+    try:
+        msg = _client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=256,
+            messages=[{"role": "user", "content": INTERPRET_PROMPT.format(description=description)}],
+        )
+        return msg.content[0].text.strip()
+    except Exception:
+        return _fallback_interpretation(description)
+
+
+def _fallback_interpretation(description: str) -> str:
+    """Local interpretation used when the API is unavailable."""
+    cleaned = " ".join(description.strip().split())
+    if not cleaned:
+        cleaned = "balanced practical chess"
+    lowered = cleaned.lower()
+    if "magnus" in lowered or "carlsen" in lowered:
+        return (
+            "Plays like Magnus Carlsen by rewarding tiny positional advantages, "
+            "centralized pieces, durable pawn structures, active kings in simplified "
+            "positions, and steady pressure over reckless material grabs."
+        )
+    if any(word in lowered for word in ("reckless", "attacker", "attack", "sacrifice", "tal")):
+        return (
+            "Plays as a reckless attacker by rewarding piece activity, open files, "
+            "advanced pieces near the enemy king, and initiative even when material "
+            "is temporarily sacrificed."
+        )
+    if "pawn" in lowered:
+        return (
+            "Plays as a pawn-driven strategist by rewarding advanced connected pawns, "
+            "central pawn control, passed-pawn potential, and long-term space."
+        )
+    if any(word in lowered for word in ("coward", "avoid", "trade", "defensive", "safe")):
+        return (
+            "Plays defensively by rewarding king safety, compact pawn shields, "
+            "piece preservation, and stable structures while avoiding unnecessary trades."
+        )
+    return (
+        f"Plays {cleaned.removeprefix('play like ').strip()} by prioritizing sound material balance, active centralized "
+        "pieces, king safety, and steady conversion of small positional advantages."
     )
-    return msg.content[0].text.strip()
 
 
 def _strip_markdown(code: str) -> str:
@@ -101,27 +142,163 @@ def _strip_markdown(code: str) -> str:
 
 
 def generate(interpreted: str, max_retries: int = 2) -> str:
-    """Step 2: generate a Python evaluate() function, retrying on validation failure."""
+    """Step 2: generate a Python evaluate() function.
+
+    Claude output is never trusted blindly. If every retry fails validation,
+    return a conservative built-in eval template so the UI never receives
+    malformed Python.
+    """
     messages = [{"role": "user", "content": CODEGEN_PROMPT.format(interpreted=interpreted)}]
+    last_error = "Claude did not return a valid evaluate() function"
 
     for attempt in range(max_retries + 1):
-        msg = _client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=4096,
-            messages=messages,
-        )
+        try:
+            msg = _client.messages.create(
+                model="claude-sonnet-4-6",
+                max_tokens=4096,
+                messages=messages,
+            )
+        except Exception as exc:
+            return _fallback_eval_code(interpreted, f"Claude API error: {exc}")
         code = _strip_markdown(msg.content[0].text)
 
-        # Early syntax + sanity check — retry with the error rather than surfacing to UI
-        error = _quick_check(code)
-        if error is None:
-            return code  # Passes quick checks; full validation happens in validate()
-        if attempt == max_retries:
-            return code  # Last attempt — let validate() report the full error
+        if getattr(msg, "stop_reason", None) == "max_tokens":
+            ok = False
+            error = "Claude response was truncated at the token limit; rewrite a shorter complete function"
+        else:
+            ok, error = validate(code)
+        if ok:
+            return code
+        last_error = error
         messages.append({"role": "assistant", "content": msg.content[0].text})
         messages.append({"role": "user", "content": RETRY_PROMPT.format(error=error)})
 
-    return code
+    return _fallback_eval_code(interpreted, last_error)
+
+
+def _fallback_eval_code(interpreted: str, error: str) -> str:
+    """Return a deterministic, validated eval if Claude repeatedly fails."""
+    lowered = interpreted.lower()
+    aggressive = any(word in lowered for word in ("attack", "attacker", "reckless", "sacrifice", "initiative", "tal"))
+    positional = any(word in lowered for word in ("magnus", "carlsen", "positional", "pressure", "tiny", "small", "centralized"))
+    pawn_focused = "pawn" in lowered
+    defensive = any(word in lowered for word in ("coward", "defensive", "safe", "king safety", "avoid", "preservation"))
+    return f'''\
+def evaluate(board: chess.Board) -> int:
+    """Fallback eval used after invalid Claude output.
+
+    Philosophy requested: {interpreted[:160]!r}
+    Generator failure: {error[:160]!r}
+    """
+    values = {{
+        chess.PAWN: 100,
+        chess.KNIGHT: 320,
+        chess.BISHOP: 330,
+        chess.ROOK: 500,
+        chess.QUEEN: 900,
+    }}
+    aggressive = {aggressive!r}
+    positional = {positional!r}
+    pawn_focused = {pawn_focused!r}
+    defensive = {defensive!r}
+    score = 0
+
+    center_squares = [chess.D4, chess.E4, chess.D5, chess.E5]
+    extended_center = [
+        chess.C3, chess.D3, chess.E3, chess.F3,
+        chess.C4, chess.F4, chess.C5, chess.F5,
+        chess.C6, chess.D6, chess.E6, chess.F6,
+    ]
+
+    for piece_type, value in values.items():
+        white_pieces = board.pieces(piece_type, chess.WHITE)
+        black_pieces = board.pieces(piece_type, chess.BLACK)
+        score += value * len(white_pieces)
+        score -= value * len(black_pieces)
+
+        for square in white_pieces:
+            file_index = chess.square_file(square)
+            rank_index = chess.square_rank(square)
+            distance_from_center = abs(file_index - 3.5) + abs(rank_index - 3.5)
+            score += int(28 - distance_from_center * 6)
+            if square in center_squares:
+                score += 45
+            elif square in extended_center:
+                score += 20
+            if aggressive and piece_type in (chess.KNIGHT, chess.BISHOP, chess.ROOK, chess.QUEEN):
+                score += rank_index * 10
+            if positional and piece_type in (chess.KNIGHT, chess.BISHOP):
+                score += int(24 - distance_from_center * 5)
+            if pawn_focused and piece_type == chess.PAWN:
+                score += rank_index * 14
+
+        for square in black_pieces:
+            file_index = chess.square_file(square)
+            rank_index = chess.square_rank(square)
+            distance_from_center = abs(file_index - 3.5) + abs(rank_index - 3.5)
+            score -= int(28 - distance_from_center * 6)
+            if square in center_squares:
+                score -= 45
+            elif square in extended_center:
+                score -= 20
+            if aggressive and piece_type in (chess.KNIGHT, chess.BISHOP, chess.ROOK, chess.QUEEN):
+                score -= (7 - rank_index) * 10
+            if positional and piece_type in (chess.KNIGHT, chess.BISHOP):
+                score -= int(24 - distance_from_center * 5)
+            if pawn_focused and piece_type == chess.PAWN:
+                score -= (7 - rank_index) * 14
+
+    white_king = board.king(chess.WHITE)
+    black_king = board.king(chess.BLACK)
+    if white_king is not None:
+        white_file = chess.square_file(white_king)
+        white_rank = chess.square_rank(white_king)
+        for pawn_square in board.pieces(chess.PAWN, chess.WHITE):
+            if abs(chess.square_file(pawn_square) - white_file) <= 1:
+                if chess.square_rank(pawn_square) >= white_rank:
+                    score += 18
+                    if defensive:
+                        score += 18
+    if black_king is not None:
+        black_file = chess.square_file(black_king)
+        black_rank = chess.square_rank(black_king)
+        for pawn_square in board.pieces(chess.PAWN, chess.BLACK):
+            if abs(chess.square_file(pawn_square) - black_file) <= 1:
+                if chess.square_rank(pawn_square) <= black_rank:
+                    score -= 18
+                    if defensive:
+                        score -= 18
+
+    white_bishops = len(board.pieces(chess.BISHOP, chess.WHITE))
+    black_bishops = len(board.pieces(chess.BISHOP, chess.BLACK))
+    if white_bishops >= 2:
+        score += 55
+        if positional:
+            score += 35
+    if black_bishops >= 2:
+        score -= 55
+        if positional:
+            score -= 35
+
+    white_queens = len(board.pieces(chess.QUEEN, chess.WHITE))
+    black_queens = len(board.pieces(chess.QUEEN, chess.BLACK))
+    if defensive:
+        score += 25 * (white_queens - black_queens)
+    if aggressive:
+        score += 30 * (len(board.pieces(chess.ROOK, chess.WHITE)) - len(board.pieces(chess.ROOK, chess.BLACK)))
+
+    if board.is_check():
+        if board.turn == chess.WHITE:
+            score -= 35
+            if aggressive:
+                score -= 45
+        else:
+            score += 35
+            if aggressive:
+                score += 45
+
+    return int(score)
+'''
 
 
 def _quick_check(code: str):
