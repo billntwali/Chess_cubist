@@ -116,6 +116,7 @@ export default function App() {
           onMove={handleMove}
           fen={fen}
           playerColor="white"
+          thinking={thinking}
         />
         <EngineInfo depth={depth} evalCp={evalCp} pv={pv} />
         <SpectatorRoom gameId={gameId} viewerCount={viewerCount} />
