@@ -18,13 +18,48 @@ That's Chess Forge.
 
 ---
 
-## How We Used Claude to Plan & Build
+## Ideation — How We Chose What to Build
 
-**Claude wasn't just a tool — it was a team member**
+Most teams pick an idea and start coding. We treated ideation as its own phase with its own process.
+
+**Step 1 — Individual exploration**
+
+Each team member independently developed their own chess project concept using their own Claude account. We fleshed out each idea fully: what it would do, how it would work technically, what the demo would look like. The goal was to arrive at the synthesis session with five well-developed ideas, not five rough sketches.
+
+**Step 2 — Cross-AI synthesis**
+
+We then fed all five ideas into multiple AI agents simultaneously and asked each one to compare, contrast, and combine:
+
+- **Gemini**
+- **Codex**
+- **DeepSeek**
+- **Lovable**
+
+Each agent was asked the same question: *what are the strongest elements across these ideas, what overlaps, what should be cut, and what would the best combined version look like?*
+
+**Step 3 — Convergence**
+
+The responses converged on the same core insight: the most interesting version was one where the AI *generates* the chess engine personality rather than playing a preset one. That synthesis — natural language in, live eval function out — became Chess Forge.
+
+Using multiple AI agents for this step was deliberate. A single model has a single prior. Running the same synthesis task across Gemini, Codex, DeepSeek, and Lovable gave us independent votes on which ideas had real signal vs. which ones any model would default to.
+
+---
+
+## How We Used AI to Plan & Build
+
+**AI wasn't just a tool — it was a team member at every stage**
 
 ![How we used Claude](how_we_used_claude.png)
 
-**Planning:**
+### Planning & Implementation — Claude-first Pipeline
+
+Once we committed to Chess Forge, the primary build pipeline used:
+
+- **Claude** — planning, architecture, all implementation code, and the live eval generation pipeline inside the product itself
+- **AntiGravity** — planning and implementation support
+- **CodeX** — planning, implementation, and test case generation toward the end of the build
+
+**Planning details:**
 - Fed the hackathon rubric into a `CLAUDE.md` file — Claude read the judging criteria first
 - Iterated through four plan files (`LLM-PLAN1` → `PLAN4`), getting pushback, refinements, and discarded ideas each round
 - Submitted all team plans; Claude compared them and picked the strongest one
