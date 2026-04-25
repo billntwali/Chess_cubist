@@ -82,7 +82,7 @@ We ran **200 iterations per person** across separate Claude Code sessions. Each 
 
 ---
 
-## 3. What We Built
+## 3. What We Built / Demo Flow
 
 Chess Forge is an AI chess personality lab with five core pieces:
 
@@ -111,10 +111,6 @@ Chess Forge is an AI chess personality lab with five core pieces:
      - Petrosian
      - Classic baseline
    - Results are saved as JSON and displayed in the UI.
-
----
-
-## 4. Demo Flow
 
 Run:
 
@@ -150,126 +146,7 @@ One-line demo close:
 
 ---
 
-## 5. How Claude Is Used
-
-Claude was not just a coding tool — it was involved in every phase of the project, from planning to runtime.
-
----
-
-### Phase 1: Planning
-
-Claude was the first team member to read the brief.
-
-- We wrote a `CLAUDE.md` file containing the hackathon rubric and judging criteria. Claude read this before any planning began.
-- We iterated through four plan files (`LLM-PLAN1` → `LLM-PLAN4`). In each round, Claude pushed back on weak ideas, refined strong ones, and discarded approaches that didn't serve the rubric.
-- All five team members submitted their own plan. Claude compared them and selected the strongest one, explaining its reasoning.
-- Claude then wrote a five-person implementation plan. Each team member selected a role, and Plan Mode generated their individual spec.
-
----
-
-### Phase 2: Building
-
-Claude wrote essentially all the code.
-
-- Every team member had their own Claude agent focused on their layer: Rust engine, eval generator, backend, frontend, tester.
-- The Rust-to-Python interface contract was designed in conversation with Claude and committed as a spec *before* either side was built. This allowed both streams to build in parallel without blocking each other.
-- Code review and iteration happened in conversation with Claude throughout.
-
----
-
-### Phase 3: Runtime — Claude Inside the Engine
-
-Claude appears at three points every time a user interacts with the app.
-
-**Step 1: Interpret the Personality**
-
-Model: Claude Haiku
-
-Input:
-
-```text
-play like magnus carlsen
-```
-
-Output:
-
-```text
-Reward small positional advantages, centralized pieces, durable pawn structures,
-active kings in simplified positions, and steady pressure over reckless material grabs.
-```
-
-Why Haiku: fast, lower cost — the task is short-form interpretation, not code generation. Impossible inputs like "only move pawns" are redirected to the nearest chess-expressible equivalent.
-
-**Step 2: Generate the Evaluation Function**
-
-Model: Claude Sonnet
-
-Claude writes:
-
-```python
-def evaluate(board: chess.Board) -> int:
-    ...
-```
-
-This function scores a chess position in centipawns from White's perspective. It is the engine's "brain" — called at every leaf node of the Rust search tree.
-
-Why Sonnet: code generation is more complex. It must reason about chess concepts and produce executable Python that doesn't crash, isn't constant, and reflects the stated philosophy.
-
-**Step 3: Narrate Moves**
-
-After the engine moves, Claude writes one sentence of commentary in the personality's voice.
-
-Example:
-
-```text
-The Coward tucks the bishop back, unwilling to risk a single exchange.
-```
-
-This makes the engine's style legible to the user — closing the loop between what they described and what they observe on the board.
-
----
-
-## 6. Critical AI Evaluation: The Five-Gate Validator
-
-We do not trust generated code blindly.
-
-Every generated eval function must pass five gates before it can play.
-
-| Gate | What It Checks |
-|------|----------------|
-| **Syntax** | Code parses as valid Python |
-| **Safety** | No unsafe imports or banned names like `os`, `subprocess`, `open`, `eval`, `exec`, `random`, or `time` |
-| **Sanity** | Starting position is roughly equal; queen-up positions score correctly |
-| **Determinism** | Same board returns the same score every time |
-| **Variance** | Scores differ across positions, proving the eval is not constant |
-
-### Real Failure We Found
-
-The prompt:
-
-```text
-play like magnus carlsen
-```
-
-once produced malformed Python:
-
-```text
-Syntax error: expected an indented block (<unknown>, line 313)
-```
-
-We fixed this by hardening the generator:
-
-- Full validation now runs on every Claude response.
-- Truncated responses are detected.
-- API timeouts are caught.
-- Malformed code never reaches the UI.
-- A prompt-aware local fallback eval is generated if Claude fails.
-
-This is the core of our AI usage story: Claude is powerful, but we evaluate and contain its output.
-
----
-
-## 7. Chess Engine Core
+## 4. Chess Engine Core & Protocols and Foundations
 
 The chess engine is written in Rust.
 
@@ -293,7 +170,7 @@ This split keeps the project stable:
 
 ---
 
-## 8. Protocols and Foundations
+## 8. 
 
 Chess Forge builds on existing chess-engine protocols and formats.
 
@@ -321,69 +198,7 @@ Why this matters:
 - It can load into standard chess GUIs.
 - It demonstrates research into chess-engine prior art.
 
-### FEN: Board Serialization
-
-Rust sends board states to Python as FEN strings.
-
-FEN lets one line represent the whole board:
-
-```text
-rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-```
-
-### Rust-to-Python Eval Protocol
-
-Rust searches. Python evaluates.
-
-Protocol:
-
-```text
-Rust   -> Python: <FEN string>\n
-Python -> Rust:   <centipawn integer>\n
-Rust   -> Python: quit\n
-```
-
-On error:
-
-```text
-Python -> Rust: ERR <message>\n
-```
-
-Rust substitutes a safe fallback score and continues.
-
-### Centipawn Scores
-
-The generated eval returns centipawns:
-
-```text
-100 centipawns = roughly 1 pawn
-+100 = White is about one pawn better
--100 = Black is about one pawn better
-```
-
-The UI displays:
-
-```text
-+135 cp -> +1.35
-```
-
-### Win Probability
-
-The backend converts centipawns into a White win probability:
-
-```python
-1 / (1 + 10 ** (-cp / 400))
-```
-
-So:
-
-- `0 cp` is about 50%
-- `+400 cp` is about 90%
-- `-400 cp` is about 10%
-
----
-
-## 9. System Architecture
+## System Architecture
 
 ```text
 User prompt
@@ -430,7 +245,7 @@ Technology stack:
 
 ---
 
-## 10. Testing and Rigor
+## 6. Testing &  Results
 
 We tested the system at multiple levels.
 
@@ -456,12 +271,7 @@ This runs:
 4. UCI handshake check
 5. pipeline check with live games
 
-
----
-
-## 11. Results
-
-![Quality Metrics Summary](assets/presentation/quality_metrics_summary.png)
+# Quality Metrics
 
 Through these metrics we prove the personalities are measurable: prompt reliability, personality fingerprints, commentary consistency, and tournament standings.
 
@@ -553,83 +363,6 @@ Karpov:    2W / 0D / 1L
 Petrosian: 1W / 0D / 2L
 ```
 
----
-
-## 12. How This Meets the Hackathon Criteria
-
-### Chess Engine Quality
-
-- Legal move generation
-- UCI engine
-- Alpha-beta search
-- Quiescence search
-- Move ordering
-- Transposition table
-- Self-play tournaments
-
-### AI Usage
-
-- Claude interprets user personalities.
-- Claude generates eval functions.
-- Claude narrates engine moves.
-- AI output is validated, tested, and hardened.
-- Failures are documented in `docs/TESTING.md`.
-
-### Process and Parallelization
-
-The project naturally separated into parallel workstreams:
-
-- Rust engine
-- Python eval generator
-- Backend orchestration
-- Frontend UI
-- Tournament/testing layer
-- Documentation/presentation
-
-The Rust-Python interface contract allowed independent development:
-
-```text
-FEN in -> centipawn score out
-```
-
-### Engineering Quality
-
-- Unit tests
-- Perft tests
-- Tournament tests
-- UCI compatibility
-- Prompt iteration logs
-- JSON tournament results
-- README, `docs/TESTING.md`, `docs/FEATURES.md`, and presentation docs
-
-### Live Walkthrough
-
-![Personality generation screen](demo_ui_generate.png)
-
-This is the generation stage. The user types a personality prompt, Claude interprets it into chess strategy language, and the app prepares a validated eval function for play.
-
-![Live game with win probability and commentary](demo_ui_play.png)
-
-This is the live game stage. The generated engine is running, the win probability bar updates from centipawn evaluation, and the commentary panel narrates each move in the personality voice.
-
-**Closer:**
-> *"One text box. Any chess personality you can describe. Claude writes the brain, the Rust engine plays it, and Claude narrates every move in character. That's Chess Forge."*
-
----
-
-## 13. Closing
-
-Chess Forge is not just another chess bot.
-
-It is a system for creating, validating, playing, and benchmarking chess personalities.
-
-The key idea:
-
-> The user describes an opponent, Claude writes the opponent's chess brain, Rust plays the legal chess, and the tournament proves whether the personality actually behaves differently.
-
-That is creativity, AI usage, experimentation, and engineering in one loop.
-
----
 
 ## Quick Reference for Q&A
 
