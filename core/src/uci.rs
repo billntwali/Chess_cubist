@@ -4,7 +4,7 @@ use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 use std::time::{Duration, Instant};
 
 use shakmaty::fen::Fen;
-use shakmaty::uci::Uci;
+use shakmaty::uci::UciMove;
 use shakmaty::{CastlingMode, Chess, Color, EnPassantMode, Position, Role};
 
 use crate::tt::TranspositionTable;
@@ -74,8 +74,8 @@ fn material_eval(pos: &Chess) -> i32 {
     let board = pos.board();
     let mut score = 0i32;
     for (i, role) in Role::ALL.iter().enumerate() {
-        let white_count = (board.by_role(*role) & *board.white()).count() as i32;
-        let black_count = (board.by_role(*role) & *board.black()).count() as i32;
+        let white_count = (board.by_role(*role) & board.white()).count() as i32;
+        let black_count = (board.by_role(*role) & board.black()).count() as i32;
         score += VALUES[i] * (white_count - black_count);
     }
     // Negamax convention: return from the side-to-move's perspective
@@ -136,7 +136,7 @@ fn parse_position(line: &str, state: &mut GameState) {
     // Apply move list
     if let Some(moves_part) = moves_str.strip_prefix("moves") {
         for token in moves_part.split_whitespace() {
-            match token.parse::<Uci>() {
+            match token.parse::<UciMove>() {
                 Ok(uci_mv) => match uci_mv.to_move(&pos) {
                     Ok(mv) => pos.play_unchecked(&mv),
                     Err(_) => break,

@@ -7,8 +7,8 @@ RUST_BINARY = Path(__file__).parents[1] / "core" / "target" / "release" / "chess
 
 MATE_IN_ONE = [
     # (fen, expected_best_move)
-    ("6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1", None),  # Ra8#
-    ("r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4", None),  # scholar's mate
+    ("6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1", None),   # Ra8#
+    ("k7/8/K7/8/8/8/8/1R6 w - - 0 1", None),        # Rb8#
 ]
 
 
