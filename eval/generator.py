@@ -98,9 +98,9 @@ def validate(code: str) -> tuple[bool, str]:
 
     # Gate 3: Sanity — canonical positions
     sanity_cases = [
-        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", -50, 50),     # start
-        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKB1R w KQkq - 0 1", 200, None),   # white up queen
-        ("rnbqkb1r/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", None, -200),  # black up queen
+        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", -50, 50),    # start ≈ 0
+        ("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 200, None),  # black missing queen → white winning
+        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", None, -200), # white missing queen → black winning
     ]
     scores = []
     for fen, lo, hi in sanity_cases:
@@ -114,7 +114,7 @@ def validate(code: str) -> tuple[bool, str]:
             return False, f"Sanity: expected <{hi}cp, got {s} on '{fen}'"
         scores.append(s)
 
-    # Gate 4: Determinism
+    # Gate 4: Determinism — reuse the same three canonical FENs
     for fen, _, _ in sanity_cases:
         b = chess.Board(fen)
         if fn(b) != fn(b):

@@ -100,12 +100,13 @@ def _play_game(white_path: str, black_path: str, movetime_ms: int = 500) -> str:
     return "draw"
 
 
-def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10) -> dict:
+def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10, movetime_ms: int = 500) -> dict:
     """Run a round-robin tournament.
 
     Args:
         engine_paths: {name: eval_file_path}
         games_per_pair: number of games per matchup (split evenly as white/black)
+        movetime_ms: milliseconds per move (lower = faster games for demos)
     Returns:
         standings dict with W/D/L per engine
     """
@@ -118,7 +119,7 @@ def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10) -> di
             a, b = names[i], names[j]
             for g in range(games_per_pair):
                 white_name, black_name = (a, b) if g % 2 == 0 else (b, a)
-                result = _play_game(engine_paths[white_name], engine_paths[black_name])
+                result = _play_game(engine_paths[white_name], engine_paths[black_name], movetime_ms)
                 if result == "white":
                     standings[white_name]["W"] += 1
                     standings[black_name]["L"] += 1
