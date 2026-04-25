@@ -412,6 +412,10 @@ Stretch goals:
 
 ## Repository Notes
 
+- `docs/` contains supporting hackathon documentation: feature guide, testing notes, final structure, and planning summary.
+- `assets/presentation/` contains presentation images and diagrams used by `PRESENTATION.md`.
+- `analysis/` contains the quality-metrics notebook used to generate presentation charts.
+- `tools/` contains one-off helper scripts, including the blueprint image generator.
 - `prev_plans/` preserves earlier planning iterations and the final synthesis.
 - `agent/results/` stores automated pipeline run logs.
 - `tournament/results/` stores self-play tournament JSON.

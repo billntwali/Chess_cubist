@@ -1,7 +1,7 @@
 """Tests for the eval generator's 5-gate validation pipeline."""
 import pytest
 from eval import generator
-from eval.generator import validate
+from eval.generator import _quick_check, validate
 
 VALID_EVAL = """
 def evaluate(board):
@@ -33,6 +33,62 @@ def evaluate(board):
     return random.randint(-100, 100)
 """
 
+SHADOWS_INT = """
+def evaluate(board):
+    int = 5
+    return int(board.turn)
+"""
+
+MUTATES_BOARD_TURN = """
+def evaluate(board):
+    import chess
+    board.turn = chess.BLACK
+    return 0
+"""
+
+CALLS_PUSH = """
+def evaluate(board):
+    import chess
+    board.push(chess.Move.null())
+    board.pop()
+    return 0
+"""
+
+TURN_BIASED_EVAL = """
+def evaluate(board):
+    import chess
+    values = {
+        chess.PAWN: 100,
+        chess.KNIGHT: 320,
+        chess.BISHOP: 330,
+        chess.ROOK: 500,
+        chess.QUEEN: 900,
+    }
+    score = 0
+    for pt, val in values.items():
+        score += val * len(board.pieces(pt, chess.WHITE))
+        score -= val * len(board.pieces(pt, chess.BLACK))
+    if board.turn == chess.BLACK:
+        score -= 180
+    return score
+"""
+
+START_BIASED_EVAL = """
+def evaluate(board):
+    import chess
+    vals = {
+        chess.PAWN: 100,
+        chess.KNIGHT: 320,
+        chess.BISHOP: 330,
+        chess.ROOK: 500,
+        chess.QUEEN: 900,
+    }
+    score = 0
+    for pt, val in vals.items():
+        score += val * len(board.pieces(pt, chess.WHITE))
+        score += val * len(board.pieces(pt, chess.BLACK))
+    return score
+"""
 
 def test_valid_eval_passes():
     ok, err = validate(VALID_EVAL)
@@ -61,6 +117,34 @@ def test_random_banned():
     assert not ok
 
 
+def test_builtin_shadowing_caught():
+    ok, err = validate(SHADOWS_INT)
+    assert not ok
+    assert "built-in name" in err
+
+
+def test_board_turn_mutation_caught():
+    ok, err = validate(MUTATES_BOARD_TURN)
+    assert not ok
+    assert "mutate board attribute" in err
+
+
+def test_mutating_board_methods_caught():
+    ok, err = validate(CALLS_PUSH)
+    assert not ok
+    assert "mutating board method" in err
+
+
+def test_turn_bias_caught():
+    ok, err = validate(TURN_BIASED_EVAL)
+    assert not ok
+    assert "Perspective consistency" in err
+
+
+def test_quick_check_catches_start_position_bias():
+    err = _quick_check(START_BIASED_EVAL)
+    assert err is not None
+    assert "Sanity:" in err
 def test_fallback_eval_is_valid():
     code = generator._fallback_eval_code("play like magnus carlsen", "Syntax error")
     ok, err = validate(code)
