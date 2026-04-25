@@ -9,6 +9,23 @@ from openai import OpenAI
 _client = OpenAI()
 
 BANNED_NAMES = {"os", "subprocess", "open", "eval", "exec", "random", "time", "__import__"}
+DISALLOWED_SHADOW_NAMES = {
+    "int",
+    "float",
+    "str",
+    "bool",
+    "list",
+    "dict",
+    "set",
+    "tuple",
+    "sum",
+    "max",
+    "min",
+    "abs",
+    "len",
+    "round",
+    "sorted",
+}
 
 INTERPRET_PROMPT = """\
 The user wants a chess engine with this philosophy: "{description}"
@@ -38,6 +55,7 @@ Hard rules:
 - Python 3.9 compatible syntax only (no match statements, no X | Y union types)
 - Import only: chess, math
 - No random, time, network, file I/O, or side effects
+- Do not shadow Python built-ins (e.g., never assign to int, list, dict, sum, max)
 - Must not raise exceptions on any legal board state
 - Deterministic — same board always returns same score
 - Return an integer
@@ -110,6 +128,10 @@ def validate(code: str) -> tuple[bool, str]:
     for node in ast.walk(tree):
         if isinstance(node, ast.Name) and node.id in BANNED_NAMES:
             return False, f"Safety: banned name '{node.id}'"
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store) and node.id in DISALLOWED_SHADOW_NAMES:
+            return False, f"Safety: cannot assign to built-in name '{node.id}'"
+        if isinstance(node, ast.arg) and node.arg in DISALLOWED_SHADOW_NAMES:
+            return False, f"Safety: function arg shadows built-in name '{node.arg}'"
         if isinstance(node, ast.Import):
             for alias in node.names:
                 if alias.name not in ("chess", "math"):

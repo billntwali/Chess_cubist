@@ -32,6 +32,12 @@ def evaluate(board):
     return random.randint(-100, 100)
 """
 
+SHADOWS_INT = """
+def evaluate(board):
+    int = 5
+    return int(board.turn)
+"""
+
 
 def test_valid_eval_passes():
     ok, err = validate(VALID_EVAL)
@@ -58,3 +64,9 @@ def test_constant_eval_caught():
 def test_random_banned():
     ok, err = validate(RANDOM_EVAL)
     assert not ok
+
+
+def test_builtin_shadowing_caught():
+    ok, err = validate(SHADOWS_INT)
+    assert not ok
+    assert "built-in name" in err
