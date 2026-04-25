@@ -162,7 +162,9 @@ async def handle_move(game_id: str, move_uci: str, philosophy: str):
     except Exception:
         pass
 
-    white_prob = centipawns_to_prob(eval_cp)
+    # eval_cp is from the engine's perspective (engine plays Black).
+    # Negate so centipawns_to_prob receives White's perspective.
+    white_prob = centipawns_to_prob(-eval_cp)
     commentary = await get_commentary(philosophy, best_move, pre_engine_fen, eval_cp)
 
     payload = {
