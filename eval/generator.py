@@ -6,7 +6,14 @@ import os
 import chess
 from openai import OpenAI
 
-_client = OpenAI()
+_client = None
+
+
+def _get_client() -> OpenAI:
+    global _client
+    if _client is None:
+        _client = OpenAI()
+    return _client
 
 BANNED_NAMES = {"os", "subprocess", "open", "eval", "exec", "random", "time", "__import__"}
 DISALLOWED_SHADOW_NAMES = {
@@ -77,6 +84,9 @@ Common mistakes to avoid:
 Material: pawn=100, knight=320, bishop=330, rook=500, queen=900, king=0
 IMPORTANT: Never use board.piece_map() — it includes kings and will cause KeyError.
 Instead use board.pieces(piece_type, color) for each piece type explicitly.
+IMPORTANT: Every heuristic should be computed as WHITE minus BLACK (relative advantage),
+not as absolute totals. The starting position should score near 0 (roughly within +/-150cp).
+Keep typical score magnitudes reasonable (usually within +/-3000cp).
 
 Bonus sizing — this is critical for the personality to actually show up in play:
 - Personality bonuses must be LARGE enough to compete with material (50–150cp per feature)
@@ -93,6 +103,8 @@ Rewrite the evaluate() function fixing the error. Key constraints:
 - Do NOT use board.piece_map() — it includes kings and causes KeyError: 6
 - Do NOT iterate over board.king() — it returns an int, not iterable
 - Do NOT add SquareSets to ints — use len(board.pieces(...)) instead
+- Ensure all terms are relative (white advantage - black advantage), not absolute totals
+- Starting position must evaluate near 0 (within +/-300cp)
 - Use board.pieces(piece_type, color) for each piece type explicitly
 - Use only Python 3.9 syntax
 - Return ONLY the function."""
@@ -100,7 +112,7 @@ Rewrite the evaluate() function fixing the error. Key constraints:
 
 def interpret(description: str) -> str:
     """Step 1: map user description to a chess-expressible concept."""
-    msg = _client.chat.completions.create(
+    msg = _get_client().chat.completions.create(
         model="gpt-4o-mini",
         max_tokens=256,
         messages=[{"role": "user", "content": INTERPRET_PROMPT.format(description=description)}],
@@ -123,7 +135,7 @@ def generate(interpreted: str, max_retries: int = 2) -> str:
     messages = [{"role": "user", "content": CODEGEN_PROMPT.format(interpreted=interpreted)}]
 
     for attempt in range(max_retries + 1):
-        msg = _client.chat.completions.create(
+        msg = _get_client().chat.completions.create(
             model="gpt-4o-mini",
             max_tokens=4096,
             messages=messages,
@@ -166,6 +178,22 @@ def _quick_check(code: str):
         int(result)
     except Exception as e:
         return f"Crashed on starting position: {e}"
+
+    # Early sanity checks to reduce user-facing failures in validate()
+    sanity_cases = [
+        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", -300, 300),
+        ("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 200, None),
+        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", None, -200),
+    ]
+    for fen, lo, hi in sanity_cases:
+        try:
+            s = int(fn(chess.Board(fen)))
+        except Exception as e:
+            return f"Sanity crash on '{fen}': {e}"
+        if lo is not None and s < lo:
+            return f"Sanity: expected >{lo}cp, got {s} on '{fen}'"
+        if hi is not None and s > hi:
+            return f"Sanity: expected <{hi}cp, got {s} on '{fen}'"
 
     return None
 

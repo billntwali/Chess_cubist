@@ -1,6 +1,6 @@
-"""Tests for the eval generator's 5-gate validation pipeline."""
+"""Tests for the eval generator's validation pipeline."""
 import pytest
-from eval.generator import validate
+from eval.generator import _quick_check, validate
 
 VALID_EVAL = """
 def evaluate(board):
@@ -38,6 +38,23 @@ def evaluate(board):
     return int(board.turn)
 """
 
+START_BIASED_EVAL = """
+def evaluate(board):
+    import chess
+    vals = {
+        chess.PAWN: 100,
+        chess.KNIGHT: 320,
+        chess.BISHOP: 330,
+        chess.ROOK: 500,
+        chess.QUEEN: 900,
+    }
+    score = 0
+    for pt, val in vals.items():
+        score += val * len(board.pieces(pt, chess.WHITE))
+        score += val * len(board.pieces(pt, chess.BLACK))
+    return score
+"""
+
 
 def test_valid_eval_passes():
     ok, err = validate(VALID_EVAL)
@@ -70,3 +87,9 @@ def test_builtin_shadowing_caught():
     ok, err = validate(SHADOWS_INT)
     assert not ok
     assert "built-in name" in err
+
+
+def test_quick_check_catches_start_position_bias():
+    err = _quick_check(START_BIASED_EVAL)
+    assert err is not None
+    assert "Sanity:" in err
