@@ -1,126 +1,157 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560">
   <defs>
-    <marker id="arr" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
-      <polygon points="0 0,7 2.5,0 5" fill="#2a6090"/>
+    <filter id="roughen">
+      <feTurbulence type="turbulence" baseFrequency="0.04" numOctaves="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="softshadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="3" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <marker id="ap" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#e8a030" opacity="0.85"/>
     </marker>
-    <marker id="arrc" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
-      <polygon points="0 0,7 2.5,0 5" fill="#0090c0"/>
+    <marker id="ag" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#50c888" opacity="0.85"/>
+    </marker>
+    <marker id="ab" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#5090e0" opacity="0.85"/>
     </marker>
   </defs>
 
-  <!-- Background -->
-  <rect width="900" height="520" fill="#0b1520" rx="8"/>
+  <!-- Paper background -->
+  <rect width="960" height="560" fill="#1a1a2e" rx="10"/>
+  <rect x="6" y="6" width="948" height="548" fill="#16213e" rx="8"/>
 
-  <!-- Column backgrounds -->
-  <rect x="16" y="16" width="262" height="488" fill="#0e1c28" rx="5" stroke="#1e3a52" stroke-width="1"/>
-  <rect x="319" y="16" width="262" height="488" fill="#0e1c28" rx="5" stroke="#1e3a52" stroke-width="1"/>
-  <rect x="622" y="16" width="262" height="488" fill="#0e1c28" rx="5" stroke="#1e3a52" stroke-width="1"/>
+  <!-- Subtle texture stripes -->
+  <rect x="6" y="6" width="948" height="548" fill="url(#paper)" rx="8" opacity="0.04"/>
 
-  <!-- Column headers -->
-  <rect x="16" y="16" width="262" height="44" fill="#0a2a40" rx="5"/>
-  <rect x="16" y="44" width="262" height="16" fill="#0a2a40"/>
-  <text x="147" y="40" text-anchor="middle" fill="#40a0d0" font-family="sans-serif" font-size="13" font-weight="bold" letter-spacing="1">PLANNING</text>
+  <!-- Title -->
+  <text x="480" y="46" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#f0e6d0" font-style="italic" opacity="0.9">How we used Claude</text>
+  <line x1="160" y1="54" x2="800" y2="54" stroke="#f0e6d0" stroke-width="1" opacity="0.2" filter="url(#roughen)"/>
 
-  <rect x="319" y="16" width="262" height="44" fill="#0a2a40" rx="5"/>
-  <rect x="319" y="44" width="262" height="16" fill="#0a2a40"/>
-  <text x="450" y="40" text-anchor="middle" fill="#40a0d0" font-family="sans-serif" font-size="13" font-weight="bold" letter-spacing="1">BUILDING</text>
+  <!-- ═══ COLUMN 1: PLANNING ═══ -->
 
-  <rect x="622" y="16" width="262" height="44" fill="#0a2a40" rx="5"/>
-  <rect x="622" y="44" width="262" height="16" fill="#0a2a40"/>
-  <text x="753" y="40" text-anchor="middle" fill="#40a0d0" font-family="sans-serif" font-size="13" font-weight="bold" letter-spacing="1">RUNTIME</text>
+  <!-- Column label -->
+  <text x="160" y="84" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="#f4a836" font-weight="bold" font-style="italic">Planning</text>
+  <line x1="60" y1="90" x2="260" y2="90" stroke="#f4a836" stroke-width="1.5" opacity="0.5" filter="url(#roughen)"/>
 
-  <!-- ── PLANNING ── -->
+  <!-- P1 -->
+  <rect x="52" y="100" width="218" height="80" rx="6" fill="#0f2440" stroke="#f4a836" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(-0.4,161,140)"/>
+  <text x="161" y="124" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#f4c060" font-weight="bold">CLAUDE.md brief</text>
+  <text x="161" y="143" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#a0b8d0">Hackathon rubric fed</text>
+  <text x="161" y="160" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#a0b8d0">into Claude's context</text>
 
-  <rect x="30" y="76" width="234" height="76" fill="#0c1e2e" rx="4" stroke="#1e4a6a" stroke-width="1"/>
-  <text x="147" y="97" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="11" font-weight="bold">CLAUDE.md brief</text>
-  <text x="147" y="118" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">Hackathon rubric loaded</text>
-  <text x="147" y="136" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">into Claude's context first</text>
+  <!-- Arrow P1→P2 -->
+  <path d="M 161 182 C 158 194 162 200 161 212" stroke="#f4a836" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#ap)" filter="url(#roughen)"/>
 
-  <line x1="147" y1="152" x2="147" y2="170" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- P2 -->
+  <rect x="52" y="214" width="218" height="90" rx="6" fill="#0f2440" stroke="#f4a836" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(0.3,161,259)"/>
+  <text x="161" y="238" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#f4c060" font-weight="bold">Plan iteration</text>
+  <text x="161" y="257" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#a0b8d0">LLM-PLAN1 → PLAN4</text>
+  <text x="161" y="274" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#a0b8d0">Claude pushes back,</text>
+  <text x="161" y="291" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#a0b8d0">refines, discards</text>
 
-  <rect x="30" y="172" width="234" height="86" fill="#0c1e2e" rx="4" stroke="#1e4a6a" stroke-width="1"/>
-  <text x="147" y="193" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="11" font-weight="bold">Plan iteration</text>
-  <text x="147" y="214" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">LLM-PLAN1 → PLAN4</text>
-  <text x="147" y="232" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">Claude pushes back,</text>
-  <text x="147" y="250" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">refines, discards ideas</text>
+  <!-- Arrow P2→P3 -->
+  <path d="M 161 306 C 159 318 163 324 161 336" stroke="#f4a836" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#ap)" filter="url(#roughen)"/>
 
-  <line x1="147" y1="258" x2="147" y2="276" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- P3 -->
+  <rect x="52" y="338" width="218" height="80" rx="6" fill="#0f2440" stroke="#f4a836" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(-0.2,161,378)"/>
+  <text x="161" y="362" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#f4c060" font-weight="bold">Claude picks best plan</text>
+  <text x="161" y="381" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#a0b8d0">All team ideas compared.</text>
+  <text x="161" y="398" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#a0b8d0">Claude selects + explains.</text>
 
-  <rect x="30" y="278" width="234" height="76" fill="#0c1e2e" rx="4" stroke="#1e4a6a" stroke-width="1"/>
-  <text x="147" y="299" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="11" font-weight="bold">Claude picks the best plan</text>
-  <text x="147" y="320" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">All team plans compared.</text>
-  <text x="147" y="338" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">Claude selects and explains.</text>
+  <!-- Arrow P3→P4 -->
+  <path d="M 161 420 C 158 432 162 438 161 450" stroke="#f4a836" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#ap)" filter="url(#roughen)"/>
 
-  <line x1="147" y1="354" x2="147" y2="372" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- P4 -->
+  <rect x="52" y="452" width="218" height="80" rx="6" fill="#0f2440" stroke="#f4a836" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(0.3,161,492)"/>
+  <text x="161" y="476" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#f4c060" font-weight="bold">Per-person Plan Mode</text>
+  <text x="161" y="495" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#a0b8d0">Each member picks a role.</text>
+  <text x="161" y="512" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#a0b8d0">Claude writes their spec.</text>
 
-  <rect x="30" y="374" width="234" height="86" fill="#0c1e2e" rx="4" stroke="#1e4a6a" stroke-width="1"/>
-  <text x="147" y="395" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="11" font-weight="bold">Per-person plan</text>
-  <text x="147" y="416" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">Each team member selects</text>
-  <text x="147" y="434" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">a role. Plan Mode writes</text>
-  <text x="147" y="452" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">their individual spec.</text>
+  <!-- ═══ COLUMN 2: BUILDING ═══ -->
 
-  <!-- ── BUILDING ── -->
+  <!-- Column label -->
+  <text x="480" y="84" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="#50c888" font-weight="bold" font-style="italic">Building</text>
+  <line x1="360" y1="90" x2="600" y2="90" stroke="#50c888" stroke-width="1.5" opacity="0.5" filter="url(#roughen)"/>
 
-  <rect x="333" y="76" width="234" height="106" fill="#0c1e2e" rx="4" stroke="#1e4a6a" stroke-width="1"/>
-  <text x="450" y="97" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="11" font-weight="bold">5 parallel Claude agents</text>
-  <text x="450" y="118" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">One agent per layer</text>
-  <rect x="343" y="128" width="100" height="22" fill="#0a2030" rx="3" stroke="#1e4060" stroke-width="0.8"/>
-  <text x="393" y="143" text-anchor="middle" fill="#4090b8" font-family="monospace" font-size="9">Rust engine</text>
-  <rect x="453" y="128" width="104" height="22" fill="#0a2030" rx="3" stroke="#1e4060" stroke-width="0.8"/>
-  <text x="505" y="143" text-anchor="middle" fill="#4090b8" font-family="monospace" font-size="9">Eval generator</text>
-  <rect x="343" y="154" width="74" height="22" fill="#0a2030" rx="3" stroke="#1e4060" stroke-width="0.8"/>
-  <text x="380" y="169" text-anchor="middle" fill="#4090b8" font-family="monospace" font-size="9">Backend</text>
-  <rect x="423" y="154" width="74" height="22" fill="#0a2030" rx="3" stroke="#1e4060" stroke-width="0.8"/>
-  <text x="460" y="169" text-anchor="middle" fill="#4090b8" font-family="monospace" font-size="9">Frontend</text>
-  <rect x="503" y="154" width="58" height="22" fill="#0a2030" rx="3" stroke="#1e4060" stroke-width="0.8"/>
-  <text x="532" y="169" text-anchor="middle" fill="#4090b8" font-family="monospace" font-size="9">Tester</text>
+  <!-- B1 -->
+  <rect x="362" y="100" width="236" height="108" rx="6" fill="#0d2218" stroke="#50c888" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(-0.3,480,154)"/>
+  <text x="480" y="124" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#7ae8a8" font-weight="bold">5 parallel Claude agents</text>
+  <text x="480" y="143" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#80b898">One per layer</text>
+  <!-- chips -->
+  <rect x="372" y="152" width="96" height="20" rx="10" fill="#0a3020" stroke="#50c888" stroke-width="1" opacity="0.8"/>
+  <text x="420" y="166" text-anchor="middle" font-family="monospace" font-size="9" fill="#50c888">Rust engine</text>
+  <rect x="476" y="152" width="112" height="20" rx="10" fill="#0a3020" stroke="#50c888" stroke-width="1" opacity="0.8"/>
+  <text x="532" y="166" text-anchor="middle" font-family="monospace" font-size="9" fill="#50c888">Eval generator</text>
+  <rect x="372" y="178" width="74" height="20" rx="10" fill="#0a3020" stroke="#50c888" stroke-width="1" opacity="0.8"/>
+  <text x="409" y="192" text-anchor="middle" font-family="monospace" font-size="9" fill="#50c888">Backend</text>
+  <rect x="454" y="178" width="74" height="20" rx="10" fill="#0a3020" stroke="#50c888" stroke-width="1" opacity="0.8"/>
+  <text x="491" y="192" text-anchor="middle" font-family="monospace" font-size="9" fill="#50c888">Frontend</text>
+  <rect x="536" y="178" width="56" height="20" rx="10" fill="#0a3020" stroke="#50c888" stroke-width="1" opacity="0.8"/>
+  <text x="564" y="192" text-anchor="middle" font-family="monospace" font-size="9" fill="#50c888">Tester</text>
 
-  <line x1="450" y1="182" x2="450" y2="200" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Arrow B1→B2 -->
+  <path d="M 480 210 C 477 222 482 228 480 240" stroke="#50c888" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#ag)" filter="url(#roughen)"/>
 
-  <rect x="333" y="202" width="234" height="86" fill="#0c1e2e" rx="4" stroke="#1e4a6a" stroke-width="1"/>
-  <text x="450" y="223" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="11" font-weight="bold">Claude writes all the code</text>
-  <text x="450" y="244" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">Every file committed was</text>
-  <text x="450" y="262" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">written and reviewed</text>
-  <text x="450" y="280" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">with Claude.</text>
+  <!-- B2 -->
+  <rect x="362" y="242" width="236" height="90" rx="6" fill="#0d2218" stroke="#50c888" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(0.4,480,287)"/>
+  <text x="480" y="266" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#7ae8a8" font-weight="bold">Claude writes all the code</text>
+  <text x="480" y="285" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#80b898">Every file was written</text>
+  <text x="480" y="302" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#80b898">and reviewed with Claude.</text>
+  <text x="480" y="322" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#80b898">Team iterated on output.</text>
 
-  <line x1="450" y1="288" x2="450" y2="306" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Arrow B2→B3 -->
+  <path d="M 480 334 C 477 346 482 352 480 364" stroke="#50c888" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#ag)" filter="url(#roughen)"/>
 
-  <rect x="333" y="308" width="234" height="86" fill="#0c1e2e" rx="4" stroke="#1e4a6a" stroke-width="1"/>
-  <text x="450" y="329" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="11" font-weight="bold">Interface contract</text>
-  <text x="450" y="350" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">Rust↔Python spec designed</text>
-  <text x="450" y="368" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">with Claude, committed</text>
-  <text x="450" y="386" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">before build started.</text>
+  <!-- B3 -->
+  <rect x="362" y="366" width="236" height="90" rx="6" fill="#0d2218" stroke="#50c888" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(-0.2,480,411)"/>
+  <text x="480" y="390" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#7ae8a8" font-weight="bold">Interface contract</text>
+  <text x="480" y="409" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#80b898">Rust↔Python spec designed</text>
+  <text x="480" y="426" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#80b898">with Claude, committed</text>
+  <text x="480" y="443" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#80b898">before build started.</text>
 
-  <!-- ── RUNTIME ── -->
+  <!-- ═══ COLUMN 3: RUNTIME ═══ -->
 
-  <rect x="636" y="76" width="234" height="76" fill="#061824" rx="4" stroke="#006688" stroke-width="1.5"/>
-  <text x="753" y="97" text-anchor="middle" fill="#00c0f0" font-family="sans-serif" font-size="11" font-weight="bold">① Interpret</text>
-  <text x="753" y="118" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="10">Maps your description</text>
-  <text x="753" y="136" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="10">into chess concepts</text>
+  <!-- Column label -->
+  <text x="798" y="84" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="#c07aee" font-weight="bold" font-style="italic">Runtime</text>
+  <line x1="680" y1="90" x2="910" y2="90" stroke="#c07aee" stroke-width="1.5" opacity="0.5" filter="url(#roughen)"/>
 
-  <line x1="753" y1="152" x2="753" y2="170" stroke="#0090c0" stroke-width="1.5" marker-end="url(#arrc)"/>
+  <!-- R1 -->
+  <rect x="682" y="100" width="232" height="80" rx="6" fill="#1a0d2e" stroke="#c07aee" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(0.4,798,140)"/>
+  <text x="798" y="124" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#e0a0ff" font-weight="bold">① Interpret</text>
+  <text x="798" y="143" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">Maps your words into</text>
+  <text x="798" y="160" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">chess concepts</text>
 
-  <rect x="636" y="172" width="234" height="76" fill="#061824" rx="4" stroke="#006688" stroke-width="1.5"/>
-  <text x="753" y="193" text-anchor="middle" fill="#00c0f0" font-family="sans-serif" font-size="11" font-weight="bold">② Generate</text>
-  <text x="753" y="214" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="10">Writes a Python evaluate()</text>
-  <text x="753" y="232" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="10">function from scratch, live</text>
+  <!-- Arrow R1→R2 -->
+  <path d="M 798 182 C 795 194 800 200 798 212" stroke="#c07aee" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#ab)" filter="url(#roughen)"/>
 
-  <line x1="753" y1="248" x2="753" y2="266" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- R2 -->
+  <rect x="682" y="214" width="232" height="80" rx="6" fill="#1a0d2e" stroke="#c07aee" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(-0.3,798,254)"/>
+  <text x="798" y="238" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#e0a0ff" font-weight="bold">② Generate</text>
+  <text x="798" y="257" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">Writes evaluate(board)</text>
+  <text x="798" y="274" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">live, from scratch</text>
 
-  <rect x="636" y="268" width="234" height="76" fill="#0c1e2e" rx="4" stroke="#1e4a6a" stroke-width="1"/>
-  <text x="753" y="289" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="11" font-weight="bold">5-gate validation</text>
-  <text x="753" y="310" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">syntax · safety · sanity</text>
-  <text x="753" y="328" text-anchor="middle" fill="#5a8aaa" font-family="sans-serif" font-size="10">determinism · variance</text>
+  <!-- Arrow R2→R3 -->
+  <path d="M 798 296 C 795 308 800 314 798 326" stroke="#c07aee" stroke-width="2" fill="none" opacity="0.6" marker-end="url(#ab)" filter="url(#roughen)"/>
 
-  <line x1="753" y1="344" x2="753" y2="362" stroke="#0090c0" stroke-width="1.5" marker-end="url(#arrc)"/>
+  <!-- R3 — validation, slightly muted -->
+  <rect x="682" y="328" width="232" height="72" rx="6" fill="#131828" stroke="#5090e0" stroke-width="1.5" opacity="0.9" filter="url(#softshadow)" transform="rotate(0.2,798,364)"/>
+  <text x="798" y="350" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#80b0e8" font-weight="bold">5-gate validation</text>
+  <text x="798" y="369" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#6080b0">syntax · safety · sanity</text>
+  <text x="798" y="386" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#6080b0">determinism · variance</text>
 
-  <rect x="636" y="364" width="234" height="76" fill="#061824" rx="4" stroke="#006688" stroke-width="1.5"/>
-  <text x="753" y="385" text-anchor="middle" fill="#00c0f0" font-family="sans-serif" font-size="11" font-weight="bold">③ Narrate</text>
-  <text x="753" y="406" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="10">After every move, Claude</text>
-  <text x="753" y="424" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="10">narrates in the personality's voice</text>
+  <!-- Arrow R3→R4 -->
+  <path d="M 798 402 C 795 414 800 420 798 432" stroke="#c07aee" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#ab)" filter="url(#roughen)"/>
 
-  <!-- Column connectors -->
-  <line x1="282" y1="260" x2="319" y2="260" stroke="#1a3a50" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr)"/>
-  <line x1="581" y1="260" x2="618" y2="260" stroke="#1a3a50" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  <!-- R4 -->
+  <rect x="682" y="434" width="232" height="80" rx="6" fill="#1a0d2e" stroke="#c07aee" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(-0.3,798,474)"/>
+  <text x="798" y="458" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#e0a0ff" font-weight="bold">③ Narrate</text>
+  <text x="798" y="477" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">After every move, Claude</text>
+  <text x="798" y="494" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">narrates in the personality's voice</text>
+
+  <!-- Column connector arrows -->
+  <path d="M 274 300 C 295 296 310 302 330 300" stroke="#888" stroke-width="1.2" fill="none" opacity="0.35" stroke-dasharray="5 3" marker-end="url(#ap)"/>
+  <path d="M 602 300 C 622 296 638 302 658 300" stroke="#888" stroke-width="1.2" fill="none" opacity="0.35" stroke-dasharray="5 3" marker-end="url(#ab)"/>
 
 </svg>
