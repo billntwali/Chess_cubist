@@ -1,0 +1,88 @@
+{
+  "session_id": "f06e4ba7",
+  "timestamp": "2026-04-25T13:44:42.700668+00:00",
+  "standings": {
+    "Coward": {
+      "W": 0,
+      "D": 0,
+      "L": 6
+    },
+    "Tal": {
+      "W": 5,
+      "D": 0,
+      "L": 1
+    },
+    "Karpov": {
+      "W": 3,
+      "D": 0,
+      "L": 3
+    },
+    "Petrosian": {
+      "W": 4,
+      "D": 0,
+      "L": 2
+    }
+  },
+  "matchups": [
+    {
+      "white": "Coward",
+      "black": "Tal",
+      "result": "black"
+    },
+    {
+      "white": "Tal",
+      "black": "Coward",
+      "result": "white"
+    },
+    {
+      "white": "Coward",
+      "black": "Karpov",
+      "result": "black"
+    },
+    {
+      "white": "Karpov",
+      "black": "Coward",
+      "result": "white"
+    },
+    {
+      "white": "Coward",
+      "black": "Petrosian",
+      "result": "black"
+    },
+    {
+      "white": "Petrosian",
+      "black": "Coward",
+      "result": "white"
+    },
+    {
+      "white": "Tal",
+      "black": "Karpov",
+      "result": "white"
+    },
+    {
+      "white": "Karpov",
+      "black": "Tal",
+      "result": "white"
+    },
+    {
+      "white": "Tal",
+      "black": "Petrosian",
+      "result": "white"
+    },
+    {
+      "white": "Petrosian",
+      "black": "Tal",
+      "result": "black"
+    },
+    {
+      "white": "Karpov",
+      "black": "Petrosian",
+      "result": "black"
+    },
+    {
+      "white": "Petrosian",
+      "black": "Karpov",
+      "result": "white"
+    }
+  ]
+}

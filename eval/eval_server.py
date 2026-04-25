@@ -17,6 +17,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     evaluate = load_eval(sys.argv[1])
+    _cache: dict = {}  # FEN -> int; eliminates repeated transposition evals
 
     for line in sys.stdin:
         line = line.strip()
@@ -24,8 +25,17 @@ if __name__ == "__main__":
             continue
         if line == "quit":
             break
+        if line in _cache:
+            print(_cache[line], flush=True)
+            continue
         try:
             board = chess.Board(line)
-            print(int(evaluate(board)), flush=True)
+            score = int(evaluate(board))
+            # evaluate() returns from White's perspective; negamax expects
+            # current-player perspective, so negate when it's Black to move.
+            if board.turn == chess.BLACK:
+                score = -score
+            _cache[line] = score
+            print(score, flush=True)
         except Exception as e:
             print(f"ERR {e}", flush=True)

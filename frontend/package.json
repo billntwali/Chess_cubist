@@ -2,6 +2,7 @@
   "name": "chess-forge-frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "chess.js": "^1.3.0",
     "react": "^18.3.1",

@@ -8,8 +8,8 @@ from eval.personalities.karpov import evaluate as karpov_eval
 from eval.personalities.petrosian import evaluate as petrosian_eval
 
 START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-WHITE_UP_QUEEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKB1R w KQkq - 0 1"
-BLACK_UP_QUEEN = "rnbqkb1r/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+WHITE_UP_QUEEN = "rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"  # black missing queen
+BLACK_UP_QUEEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1"  # white missing queen
 
 EVALS = [classic_eval, tal_eval, karpov_eval, petrosian_eval]
 

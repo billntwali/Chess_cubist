@@ -2,6 +2,7 @@
 import subprocess
 import time
 from pathlib import Path
+from typing import Optional
 
 import chess
 
@@ -48,10 +49,10 @@ def _read_until(proc: subprocess.Popen, token: str, timeout_lines: int = 100):
     raise RuntimeError(f"never received '{token}'")
 
 
-def _get_move(proc: subprocess.Popen, moves: list[str]) -> str | None:
+def _get_move(proc: subprocess.Popen, moves: list[str]) -> Optional[str]:
     pos_cmd = "position startpos" + (" moves " + " ".join(moves) if moves else "")
     proc.stdin.write(pos_cmd + "\n")
-    proc.stdin.write(f"go movetime {MOVETIME_MS}\n")
+    proc.stdin.write(f"go movetime {MOVETIME_MS} depth 4\n")
     proc.stdin.flush()
     for _ in range(500):
         line = proc.stdout.readline().strip()
@@ -96,7 +97,7 @@ def _play_game(white_path: str, black_path: str) -> str:
     return "draw"
 
 
-def run(generated_eval_path: str | None = None) -> CheckResult:
+def run(generated_eval_path: Optional[str] = None) -> CheckResult:
     start = time.time()
 
     if not BINARY.exists():

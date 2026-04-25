@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import Board from "./components/Board";
-import CodeViewer from "./components/CodeViewer";
 import CommentaryFeed from "./components/CommentaryFeed";
 import EngineInfo from "./components/EngineInfo";
 import PhilosophyInput from "./components/PhilosophyInput";
@@ -10,7 +9,6 @@ import WinProbBar from "./components/WinProbBar";
 
 export default function App() {
   const [evalPath, setEvalPath] = useState("");
-  const [code, setCode] = useState("");
   const [philosophy, setPhilosophy] = useState("");
   const [gameId, setGameId] = useState<string | null>(null);
   const [fen, setFen] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -20,80 +18,118 @@ export default function App() {
   const [depth, setDepth] = useState(0);
   const [commentary, setCommentary] = useState<string[]>([]);
   const [viewerCount, setViewerCount] = useState(0);
-  const [tournamentStandings, setTournamentStandings] = useState([]);
+  const [tournamentStandings, setTournamentStandings] = useState<any[]>([]);
+  const [tournamentRunning, setTournamentRunning] = useState(false);
+  const [thinking, setThinking] = useState(false);
+  const [playerTurn, setPlayerTurn] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
-  function handleEvalReady(path: string, evalCode: string, desc: string) {
+  function handleEvalReady(path: string, _code: string, desc: string) {
     setEvalPath(path);
-    setCode(evalCode);
     setPhilosophy(desc);
     setGameId(null);
+    setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    setCommentary([]);
+    setPlayerTurn(false);
+    setWhiteProb(0.5);
+    setEvalCp(0);
+    setPv("");
+    setDepth(0);
   }
 
   async function startGame() {
-    const res = await fetch("/api/game/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eval_path: evalPath, philosophy }),
-    });
-    const { game_id } = await res.json();
-    setGameId(game_id);
+    try {
+      const res = await fetch("/api/game/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eval_path: evalPath, philosophy }),
+      });
+      if (!res.ok) { alert(`Failed to start game: ${await res.text()}`); return; }
+      const { game_id } = await res.json();
+      setGameId(game_id);
 
-    const ws = new WebSocket(`ws://${window.location.host}/ws/game/${game_id}`);
-    ws.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      if (data.fen) setFen(data.fen);
-      if (data.eval_cp !== undefined) setEvalCp(data.eval_cp);
-      if (data.white_prob !== undefined) setWhiteProb(data.white_prob);
-      if (data.pv) setPv(data.pv);
-      if (data.depth) setDepth(data.depth);
-      if (data.commentary) setCommentary((c) => [...c, data.commentary]);
-    };
-    wsRef.current = ws;
+      setPlayerTurn(true);
+      const ws = new WebSocket(`ws://${window.location.host}/ws/game/${game_id}`);
+      ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        if (data.error) { alert(`Engine error: ${data.error}`); return; }
+        if (data.fen) setFen(data.fen);
+        if (data.eval_cp !== undefined) setEvalCp(data.eval_cp);
+        if (data.white_prob !== undefined) setWhiteProb(data.white_prob);
+        if (data.pv) setPv(data.pv);
+        if (data.depth) setDepth(data.depth);
+        if (data.commentary) setCommentary((c) => [...c, data.commentary]);
+        setThinking(false);
+        setPlayerTurn(true);
+      };
+      ws.onerror = () => alert("WebSocket connection failed — is the backend running?");
+      wsRef.current = ws;
+    } catch {
+      alert("Could not reach backend — is it running on port 8000?");
+    }
   }
 
   function handleMove(moveUci: string) {
+    setThinking(true);
+    setPlayerTurn(false);
     wsRef.current?.send(JSON.stringify({ move: moveUci }));
   }
 
   async function runTournament() {
-    const res = await fetch("/api/tournament", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_eval_path: evalPath, user_name: philosophy.slice(0, 20) }),
-    });
-    const data = await res.json();
-    const standings = Object.entries(data.standings).map(([name, record]: [string, any]) => ({
-      name,
-      ...record,
-    }));
-    setTournamentStandings(standings);
+    setTournamentRunning(true);
+    setTournamentStandings([]);
+    try {
+      const res = await fetch("/api/tournament", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_eval_path: evalPath, user_name: philosophy.slice(0, 20) }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        alert(`Tournament failed: ${text}`);
+        return;
+      }
+      const data = await res.json();
+      setTournamentStandings(
+        Object.entries(data.standings).map(([name, record]: [string, any]) => ({ name, ...record }))
+      );
+    } catch (err) {
+      alert(`Tournament error: ${err}`);
+    } finally {
+      setTournamentRunning(false);
+    }
   }
 
   return (
     <div className="app">
-      <header><h1>Chess Forge</h1></header>
+      <header>
+        <div className="header-logo">♟ Chess Forge</div>
+        {thinking && <div className="thinking-badge">Engine thinking…</div>}
+        {philosophy && <div className="philosophy-badge">"{philosophy.slice(0, 40)}{philosophy.length > 40 ? '…' : ''}"</div>}
+      </header>
 
       <div className="left-panel">
         <PhilosophyInput onEvalReady={handleEvalReady} />
         {evalPath && !gameId && (
-          <button onClick={startGame}>Play</button>
+          <button className="btn-primary" onClick={startGame}>▶ Play</button>
         )}
         {gameId && (
-          <button onClick={runTournament}>Run Tournament</button>
+          <button className="btn-secondary" onClick={runTournament} disabled={tournamentRunning}>
+            {tournamentRunning ? "⏳ Running tournament…" : "⚔ Run Tournament"}
+          </button>
         )}
-        <CodeViewer code={code} />
+        <TournamentResults standings={tournamentStandings} />
       </div>
 
       <div className="center-panel">
         <WinProbBar whiteProb={whiteProb} />
         <Board
-          evalPath={evalPath}
-          philosophy={philosophy}
           gameId={gameId}
           onMove={handleMove}
           fen={fen}
           playerColor="white"
+          thinking={thinking}
+          playerTurn={playerTurn}
         />
         <EngineInfo depth={depth} evalCp={evalCp} pv={pv} />
         <SpectatorRoom gameId={gameId} viewerCount={viewerCount} />
@@ -101,7 +137,6 @@ export default function App() {
 
       <div className="right-panel">
         <CommentaryFeed lines={commentary} />
-        <TournamentResults standings={tournamentStandings} />
       </div>
     </div>
   );

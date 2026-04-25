@@ -22,33 +22,41 @@ export default function PhilosophyInput({ onEvalReady }: Props) {
   async function handleGenerate() {
     setStatus("interpreting");
     setError("");
+    setInterpreted("");
 
-    const interpRes = await fetch("/api/interpret", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description }),
-    });
-    const { interpreted: interp } = await interpRes.json();
-    setInterpreted(interp);
-    setStatus("generating");
+    try {
+      const interpRes = await fetch("/api/interpret", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description }),
+      });
+      if (!interpRes.ok) throw new Error("Backend unreachable — is it running?");
+      const { interpreted: interp } = await interpRes.json();
+      setInterpreted(interp);
+      setStatus("generating");
 
-    const genRes = await fetch("/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ interpreted: interp }),
-    });
-    const data = await genRes.json();
+      const genRes = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interpreted: interp }),
+      });
+      if (!genRes.ok) throw new Error("Generation request failed");
+      const data = await genRes.json();
 
-    if (!data.ok) {
+      if (!data.ok) {
+        setStatus("error");
+        setError(data.error);
+        return;
+      }
+
+      setCode(data.code);
+      setStatus("ready");
+      setHistory((h) => [{ description, interpreted: interp, evalPath: data.eval_path, code: data.code }, ...h]);
+      onEvalReady(data.eval_path, data.code, description);
+    } catch (e: any) {
       setStatus("error");
-      setError(data.error);
-      return;
+      setError(e.message ?? "Something went wrong — check the backend is running on port 8000.");
     }
-
-    setCode(data.code);
-    setStatus("ready");
-    setHistory((h) => [{ description, interpreted: interp, evalPath: data.eval_path, code: data.code }, ...h]);
-    onEvalReady(data.eval_path, data.code, description);
   }
 
   return (
@@ -65,7 +73,7 @@ export default function PhilosophyInput({ onEvalReady }: Props) {
 
       {interpreted && (
         <div className="interpreted">
-          <strong>Interpreted as:</strong> {interpreted}
+          <strong>Playing style:</strong> {interpreted}
         </div>
       )}
 

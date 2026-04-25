@@ -16,18 +16,20 @@ def evaluate(board: chess.Board) -> int:
         score += val * len(board.pieces(pt, chess.WHITE))
         score -= val * len(board.pieces(pt, chess.BLACK))
 
-    # Mobility bonus (piece activity)
-    if board.turn == chess.WHITE:
-        white_mobility = len(list(board.legal_moves))
-        board.push(chess.Move.null())
-        black_mobility = len(list(board.legal_moves))
-        board.pop()
-    else:
-        black_mobility = len(list(board.legal_moves))
-        board.push(chess.Move.null())
-        white_mobility = len(list(board.legal_moves))
-        board.pop()
-    score += 5 * (white_mobility - black_mobility)
+    try:
+        if board.turn == chess.WHITE:
+            white_mobility = len(list(board.legal_moves))
+            board.push(chess.Move.null())
+            black_mobility = len(list(board.legal_moves))
+            board.pop()
+        else:
+            black_mobility = len(list(board.legal_moves))
+            board.push(chess.Move.null())
+            white_mobility = len(list(board.legal_moves))
+            board.pop()
+        score += 5 * (white_mobility - black_mobility)
+    except AssertionError:
+        pass  # null move is illegal in check
 
     # King attack zone: bonus for pieces near enemy king
     black_king_sq = board.king(chess.BLACK)
