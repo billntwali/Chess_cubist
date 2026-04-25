@@ -96,7 +96,7 @@ One-line demo close:
 
 Claude was not just a coding tool — it was involved in every phase of the project, from planning to runtime.
 
-![How we used Claude](how_we_used_claude.png)
+![How we used Claude](assets/presentation/how_we_used_claude.png)
 
 ---
 
