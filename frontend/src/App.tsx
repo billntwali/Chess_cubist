@@ -27,6 +27,8 @@ export default function App() {
   const [tournamentRunning, setTournamentRunning] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [playerTurn, setPlayerTurn] = useState(false);
+  const [showEngineInfo, setShowEngineInfo] = useState(true);
+  const [showCommentary, setShowCommentary] = useState(true);
   const wsRef = useRef<WebSocket | null>(null);
 
   function handleEvalReady(path: string, _code: string, desc: string) {
@@ -137,12 +139,12 @@ export default function App() {
           thinking={thinking}
           playerTurn={playerTurn}
         />
-        <EngineInfo depth={depth} evalCp={evalCp} pv={pv} />
+        {showEngineInfo && <EngineInfo depth={depth} evalCp={evalCp} pv={pv} onClose={() => setShowEngineInfo(false)} />}
         <SpectatorRoom gameId={gameId} viewerCount={viewerCount} />
       </div>
 
       <div className="right-panel">
-        <CommentaryFeed lines={commentary} />
+        {showCommentary && <CommentaryFeed lines={commentary} onClose={() => setShowCommentary(false)} />}
       </div>
     </div>
   );

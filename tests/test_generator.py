@@ -1,5 +1,6 @@
 """Tests for the eval generator's validation pipeline."""
 import pytest
+from eval import generator
 from eval.generator import _quick_check, validate
 
 VALID_EVAL = """
@@ -93,3 +94,88 @@ def test_quick_check_catches_start_position_bias():
     err = _quick_check(START_BIASED_EVAL)
     assert err is not None
     assert "Sanity:" in err
+
+
+def test_fallback_eval_is_valid():
+    code = generator._fallback_eval_code("play like magnus carlsen", "Syntax error")
+    ok, err = validate(code)
+    assert ok, err
+
+
+def _make_fake_client(response_text: str):
+    """Build an OpenAI-style fake client returning response_text."""
+    class FakeMessage:
+        content = response_text
+    class FakeChoice:
+        message = FakeMessage()
+    class FakeCompletion:
+        choices = [FakeChoice()]
+    class FakeCompletions:
+        def create(self, **_kwargs):
+            return FakeCompletion()
+    class FakeChat:
+        completions = FakeCompletions()
+    class FakeClient:
+        chat = FakeChat()
+    return FakeClient()
+
+
+def test_generate_falls_back_after_bad_output(monkeypatch):
+    monkeypatch.setattr(generator, "_client", _make_fake_client("def evaluate(board):\nif True:\nreturn 0"))
+    code = generator.generate("play like magnus carlsen", max_retries=1)
+    ok, err = validate(code)
+    assert ok, err
+    assert "Fallback eval" in code
+
+
+def test_generate_falls_back_after_api_error(monkeypatch):
+    class FakeCompletions:
+        def create(self, **_kwargs):
+            raise TimeoutError("network timeout")
+    class FakeChat:
+        completions = FakeCompletions()
+    class FakeClient:
+        chat = FakeChat()
+    monkeypatch.setattr(generator, "_client", FakeClient())
+    code = generator.generate("play like magnus carlsen", max_retries=1)
+    ok, err = validate(code)
+    assert ok, err
+    assert "Fallback eval" in code
+
+
+def test_interpret_falls_back_after_api_error(monkeypatch):
+    class FakeCompletions:
+        def create(self, **_kwargs):
+            raise TimeoutError("network timeout")
+    class FakeChat:
+        completions = FakeCompletions()
+    class FakeClient:
+        chat = FakeChat()
+    monkeypatch.setattr(generator, "_client", FakeClient())
+    interpreted = generator.interpret("play like magnus carlsen")
+    assert "magnus" in interpreted.lower() or "positional" in interpreted.lower()
+
+
+def test_fallback_interpretation_has_prompt_specific_styles():
+    cases = {
+        "play like magnus carlsen": "Magnus Carlsen",
+        "play like a reckless attacker": "reckless attacker",
+        "only move pawns if possible": "pawn-driven strategist",
+        "play like a coward who avoids all trades": "defensively",
+    }
+    for prompt, expected in cases.items():
+        assert expected in generator._fallback_interpretation(prompt)
+
+
+def test_prompt_specific_fallback_evals_are_valid():
+    prompts = [
+        "play like magnus carlsen",
+        "play like a reckless attacker",
+        "only move pawns if possible",
+        "play like a coward who avoids all trades",
+    ]
+    for prompt in prompts:
+        interpreted = generator._fallback_interpretation(prompt)
+        code = generator._fallback_eval_code(interpreted, "forced fallback")
+        ok, err = validate(code)
+        assert ok, f"{prompt}: {err}"

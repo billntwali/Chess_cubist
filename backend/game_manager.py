@@ -35,7 +35,8 @@ class GameState:
             raise FileNotFoundError(
                 f"Rust binary not found at {RUST_BINARY}. Run: make build"
             )
-        eval_cmd = f"python3 {EVAL_SERVER} {self.eval_path}"
+        import sys
+        eval_cmd = f"{sys.executable} {EVAL_SERVER} {self.eval_path}"
         self.engine_proc = subprocess.Popen(
             [str(RUST_BINARY), "--eval-server", eval_cmd],
             stdin=subprocess.PIPE,

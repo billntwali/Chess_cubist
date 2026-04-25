@@ -27,7 +27,9 @@ EVAL_SERVER = Path(__file__).parents[1] / "eval" / "eval_server.py"
 
 
 def _spawn_engine(eval_path: str) -> subprocess.Popen:
-    eval_cmd = f"python3 {EVAL_SERVER} {eval_path}"
+    import sys
+    python = sys.executable
+    eval_cmd = f"{python} {EVAL_SERVER} {eval_path}"
     proc = subprocess.Popen(
         [str(RUST_BINARY), "--eval-server", eval_cmd],
         stdin=subprocess.PIPE,
