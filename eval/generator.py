@@ -1,12 +1,14 @@
-"""Two-step Claude pipeline: interpret philosophy → generate evaluate() function."""
+"""Two-step Gemini pipeline: interpret philosophy → generate evaluate() function."""
 import ast
 import math
 import uuid
 import os
 import chess
-import anthropic
+import google.generativeai as genai
 
-_client = anthropic.Anthropic()
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY", ""))
+_fast_model = genai.GenerativeModel("gemini-2.0-flash")
+_capable_model = genai.GenerativeModel("gemini-2.0-flash")
 
 BANNED_NAMES = {"os", "subprocess", "open", "eval", "exec", "random", "time", "__import__"}
 
@@ -47,22 +49,14 @@ Material: pawn=100, knight=320, bishop=330, rook=500, queen=900"""
 
 def interpret(description: str) -> str:
     """Step 1: map user description to a chess-expressible concept."""
-    msg = _client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=256,
-        messages=[{"role": "user", "content": INTERPRET_PROMPT.format(description=description)}],
-    )
-    return msg.content[0].text.strip()
+    response = _fast_model.generate_content(INTERPRET_PROMPT.format(description=description))
+    return response.text.strip()
 
 
 def generate(interpreted: str) -> str:
     """Step 2: generate a Python evaluate() function from the interpreted description."""
-    msg = _client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=1024,
-        messages=[{"role": "user", "content": CODEGEN_PROMPT.format(interpreted=interpreted)}],
-    )
-    return msg.content[0].text.strip()
+    response = _capable_model.generate_content(CODEGEN_PROMPT.format(interpreted=interpreted))
+    return response.text.strip()
 
 
 def validate(code: str) -> tuple[bool, str]:
