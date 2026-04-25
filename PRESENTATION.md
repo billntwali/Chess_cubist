@@ -456,13 +456,6 @@ This runs:
 4. UCI handshake check
 5. pipeline check with live games
 
-Recent testing:
-
-- Generator tests: `12 passed`
-- Tournament tests: `9 passed`
-- Exact prompt `"play like magnus carlsen"` generated valid code
-- Generated Magnus eval completed a tournament
-- Fallback styles completed a tournament
 
 ---
 
@@ -499,27 +492,42 @@ Each failure became a validation rule, prompt constraint, or fallback behavior.
 
 ![Personality Fingerprints](assets/presentation/quality_metrics_fingerprint.png)
 
-Each personality is evaluated across a shared suite of positions. Wide score distributions mean the engine has strong opinions; flat distributions mean the personality is getting drowned out by material.
+Each personality's evaluate() function is called on 20 chess positions spanning openings, middlegames, and endgames, returning a centipawn score for each. Those 20 scores are plotted as a bar chart: the shape and spread of that chart is the fingerprint.
 
 ![Personality Distinctiveness Score](assets/presentation/quality_metrics_pds.png)
 
 The distinctiveness score uses pairwise Cohen's d over the personality fingerprints. Large effects mean two engines evaluate the same positions in genuinely different ways.
 
+Cohen's d = |mean_A - mean_B| / pooled_std_dev
+
+Computed for every pair (Tal vs Karpov, Tal vs Petrosian, etc.) using their 20-position fingerprint scores as the distributions. The thresholds: d < 0.2 = negligible (basically the same engine), d > 0.8 = large effect (statistically different).
+* The key test: Tal (aggressive) vs Petrosian (defensive) should have the largest d.
+
 ![Philosophy-Play Alignment](assets/presentation/quality_metrics_ppar.png)
 
 **PPAR: Philosophy-Play Alignment Rate**
 
-PPAR compares each personality's score to the Classic baseline across attack, structure, and defense positions. Expected pattern:
+PPAR compares each personality's score to the Classic baseline across attack, structure, and defense positions. 20 positions are grouped into three categories (attack positions, structural positions, defensive positions). For each category:
 
+Personality Delta = avg(personality_score - classic_score) across positions in that category
+
+Expected pattern:
 - Tal should like attack positions.
 - Karpov should like structure positions.
 - Petrosian should like defensive positions.
+
+
 
 ![Commentary Consistency Score](assets/presentation/quality_metrics_ccs.png)
 
 CCS checks whether generated commentary uses language consistent with the personality: aggressive, positional, or defensive.
 
-The point is not just that the code differs. The play differs.
+An aggressive engine should produce commentary with words like "attack", "sacrifice", "open file" — not "fortress", "prophylaxis", "consolidate".
+
+Each personality has a style lexicon (list of keyword stems). For each commentary line, every word is checked for substring matches against that lexicon:
+
+CCS = keyword_hits / total_words
+
 
 For example:
 
@@ -532,15 +540,11 @@ For example:
 
 ![Tournament](assets/presentation/quality_metrics_tournament.png)
 
-Tournament play lets us evaluate generated personalities empirically. Points are:
-
-```text
-Win = 2, Draw = 1, Loss = 0
-```
+Tournament play lets us evaluate generated personalities empirically. Every engine plays every other engine twice. Win = 2 points, draw = 1, loss = 0.
 
 The "Coward" engine scoring 0 in one run is a useful result: it shows that an intentionally passive generated personality changes game outcomes, not only eval text.
 
-Recent generated Magnus tournament:
+Recent played Magnus tournament:
 
 ```text
 Magnus:    2W / 0D / 1L
