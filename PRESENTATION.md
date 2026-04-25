@@ -1,5 +1,4 @@
 # Chess Forge — Presentation Script
-**5 minutes · ~1.5 min demo · 5 speakers**
 
 ---
 
