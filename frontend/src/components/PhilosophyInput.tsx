@@ -22,6 +22,7 @@ export default function PhilosophyInput({ onEvalReady }: Props) {
   async function handleGenerate() {
     setStatus("interpreting");
     setError("");
+    setInterpreted("");
 
     const interpRes = await fetch("/api/interpret", {
       method: "POST",

@@ -21,6 +21,7 @@ export default function App() {
   const [commentary, setCommentary] = useState<string[]>([]);
   const [viewerCount, setViewerCount] = useState(0);
   const [tournamentStandings, setTournamentStandings] = useState([]);
+  const [tournamentRunning, setTournamentRunning] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
   function handleEvalReady(path: string, evalCode: string, desc: string) {
@@ -57,17 +58,23 @@ export default function App() {
   }
 
   async function runTournament() {
-    const res = await fetch("/api/tournament", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_eval_path: evalPath, user_name: philosophy.slice(0, 20) }),
-    });
-    const data = await res.json();
-    const standings = Object.entries(data.standings).map(([name, record]: [string, any]) => ({
-      name,
-      ...record,
-    }));
-    setTournamentStandings(standings);
+    setTournamentRunning(true);
+    setTournamentStandings([]);
+    try {
+      const res = await fetch("/api/tournament", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_eval_path: evalPath, user_name: philosophy.slice(0, 20) }),
+      });
+      const data = await res.json();
+      const standings = Object.entries(data.standings).map(([name, record]: [string, any]) => ({
+        name,
+        ...record,
+      }));
+      setTournamentStandings(standings);
+    } finally {
+      setTournamentRunning(false);
+    }
   }
 
   return (
@@ -80,7 +87,9 @@ export default function App() {
           <button onClick={startGame}>Play</button>
         )}
         {gameId && (
-          <button onClick={runTournament}>Run Tournament</button>
+          <button onClick={runTournament} disabled={tournamentRunning}>
+            {tournamentRunning ? "Running tournament… (1–2 min)" : "Run Tournament"}
+          </button>
         )}
         <CodeViewer code={code} />
       </div>
