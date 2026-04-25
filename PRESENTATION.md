@@ -196,7 +196,7 @@ Why this matters:
 - It can load into standard chess GUIs.
 - It demonstrates research into chess-engine prior art.
 
-## System Architecture
+## 5. System Architecture
 
 ```text
 User prompt
