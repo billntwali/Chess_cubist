@@ -53,14 +53,18 @@ Useful read-only board methods:
   chess.square_file(sq), chess.square_rank(sq)  -> int 0-7
   len(list(board.legal_moves))     -> mobility count (call once per side via board.turn)
 
-Material: pawn=100, knight=320, bishop=330, rook=500, queen=900"""
+Material: pawn=100, knight=320, bishop=330, rook=500, queen=900, king=0
+IMPORTANT: Never use board.piece_map() — it includes kings and will cause KeyError.
+Instead use board.pieces(piece_type, color) for each piece type explicitly."""
 
 RETRY_PROMPT = """\
 The function you wrote has this error: {error}
 
 Rewrite the evaluate() function fixing the error. Key constraints:
 - Do NOT call board.push() or board.pop()
-- Do NOT use board.legal_moves for the opponent (board.turn gives current side)
+- Do NOT use board.piece_map() — it includes kings and causes KeyError: 6
+- Use board.pieces(piece_type, color) for each piece type explicitly
+- Include king=0 if you need a complete material dict
 - Use only Python 3.9 syntax
 - Return ONLY the function."""
 
