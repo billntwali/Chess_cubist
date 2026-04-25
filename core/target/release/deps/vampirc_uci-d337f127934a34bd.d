@@ -1,0 +1,10 @@
+/Users/varun.fuloria/Developer/Chess_cubist/core/target/release/deps/vampirc_uci-d337f127934a34bd.d: /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/lib.rs /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/uci.rs /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/parser.rs /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/../res/uci.pest
+
+/Users/varun.fuloria/Developer/Chess_cubist/core/target/release/deps/libvampirc_uci-d337f127934a34bd.rlib: /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/lib.rs /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/uci.rs /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/parser.rs /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/../res/uci.pest
+
+/Users/varun.fuloria/Developer/Chess_cubist/core/target/release/deps/libvampirc_uci-d337f127934a34bd.rmeta: /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/lib.rs /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/uci.rs /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/parser.rs /Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/../res/uci.pest
+
+/Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/lib.rs:
+/Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/uci.rs:
+/Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/parser.rs:
+/Users/varun.fuloria/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vampirc-uci-0.11.1/src/../res/uci.pest:
