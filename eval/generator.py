@@ -35,6 +35,7 @@ returning a centipawn score from White's perspective (positive = White better).
 Philosophy: {interpreted}
 
 Hard rules:
+- Python 3.9 compatible syntax only (no match statements, no X | Y union types)
 - Import only: chess, math
 - No random, time, network, file I/O, or side effects
 - Must not raise exceptions on any legal board state
@@ -43,6 +44,12 @@ Hard rules:
 - Return ONLY the function, no explanation
 
 Material: pawn=100, knight=320, bishop=330, rook=500, queen=900"""
+
+RETRY_PROMPT = """\
+The function you wrote has this error: {error}
+
+Rewrite the evaluate() function fixing the error. Follow all original rules,
+and use only Python 3.9 compatible syntax. Return ONLY the function."""
 
 
 def interpret(description: str) -> str:
@@ -65,14 +72,30 @@ def _strip_markdown(code: str) -> str:
     return "\n".join(lines).strip()
 
 
-def generate(interpreted: str) -> str:
-    """Step 2: generate a Python evaluate() function from the interpreted description."""
-    msg = _client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=1024,
-        messages=[{"role": "user", "content": CODEGEN_PROMPT.format(interpreted=interpreted)}],
-    )
-    return _strip_markdown(msg.content[0].text)
+def generate(interpreted: str, max_retries: int = 2) -> str:
+    """Step 2: generate a Python evaluate() function, retrying on validation failure."""
+    messages = [{"role": "user", "content": CODEGEN_PROMPT.format(interpreted=interpreted)}]
+
+    for attempt in range(max_retries + 1):
+        msg = _client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1024,
+            messages=messages,
+        )
+        code = _strip_markdown(msg.content[0].text)
+
+        # Early syntax check — retry immediately rather than surfacing to UI
+        try:
+            ast.parse(code)
+            return code  # Syntax is fine; full validation happens in validate()
+        except SyntaxError as e:
+            if attempt == max_retries:
+                return code  # Return anyway; validate() will report the error
+            # Feed the error back to Claude for self-correction
+            messages.append({"role": "assistant", "content": msg.content[0].text})
+            messages.append({"role": "user", "content": RETRY_PROMPT.format(error=str(e))})
+
+    return code
 
 
 def validate(code: str) -> tuple[bool, str]:
