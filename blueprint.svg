@@ -1,227 +1,163 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="500" viewBox="0 0 860 500">
   <defs>
-    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#0e1e2e" stroke-width="0.8"/>
-    </pattern>
-    <marker id="ab" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
-      <polygon points="0 0,7 2.5,0 5" fill="#2a60a0"/>
+    <marker id="arr" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#2a6090"/>
     </marker>
-    <marker id="ac" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
-      <polygon points="0 0,7 2.5,0 5" fill="#00aacc"/>
-    </marker>
-    <marker id="au" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto" markerUnits="strokeWidth">
-      <polygon points="0 0,7 2.5,0 5" fill="#3a8a3a"/>
+    <marker id="arrc" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#0090c0"/>
     </marker>
   </defs>
 
   <!-- Background -->
-  <rect width="960" height="540" fill="#07111e"/>
-  <rect width="960" height="540" fill="url(#grid)"/>
+  <rect width="860" height="500" fill="#0b1520" rx="6"/>
 
-  <!-- Title bar -->
-  <rect x="0" y="0" width="960" height="40" fill="#090f1c"/>
-  <line x1="0" y1="40" x2="960" y2="40" stroke="#2a60a0" stroke-width="1.5"/>
-  <text x="480" y="26" text-anchor="middle" fill="#60b0ff" font-family="monospace" font-size="13" font-weight="bold" letter-spacing="4">CHESS FORGE — SYSTEM BLUEPRINT</text>
-  <text x="20" y="26" fill="#2a60a0" font-family="monospace" font-size="10">v1.0</text>
-  <text x="940" y="26" text-anchor="end" fill="#2a60a0" font-family="monospace" font-size="10">2026</text>
+  <!-- Column backgrounds -->
+  <rect x="14" y="14" width="252" height="432" fill="#0e1c28" rx="4" stroke="#1e3a52" stroke-width="1"/>
+  <rect x="304" y="14" width="252" height="432" fill="#0e1c28" rx="4" stroke="#1e3a52" stroke-width="1"/>
+  <rect x="594" y="14" width="252" height="432" fill="#0e1c28" rx="4" stroke="#1e3a52" stroke-width="1"/>
 
-  <!-- ═══ SECTION 1: HOW WE BUILT IT ═══ -->
-  <text x="20" y="56" fill="#2a60a0" font-family="monospace" font-size="9" letter-spacing="2">// HOW WE BUILT IT</text>
+  <!-- Column headers -->
+  <rect x="14" y="14" width="252" height="36" fill="#0a2a40" rx="4"/>
+  <rect x="14" y="36" width="252" height="14" fill="#0a2a40"/>
+  <text x="140" y="37" text-anchor="middle" fill="#40a0d0" font-family="sans-serif" font-size="12" font-weight="bold">PLANNING</text>
 
-  <!-- Box 1: Brief -->
-  <rect x="20" y="63" width="158" height="54" fill="#0a1828" rx="2" stroke="#2a60a0" stroke-width="1"/>
-  <text x="99" y="80" text-anchor="middle" fill="#60b0ff" font-family="monospace" font-size="9" font-weight="bold">CLAUDE.md BRIEF</text>
-  <line x1="30" y1="84" x2="168" y2="84" stroke="#1a3050" stroke-width="0.5"/>
-  <text x="99" y="97" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">hackathon rubric → context</text>
-  <text x="99" y="109" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">AI reads the brief first</text>
+  <rect x="304" y="14" width="252" height="36" fill="#0a2a40" rx="4"/>
+  <rect x="304" y="36" width="252" height="14" fill="#0a2a40"/>
+  <text x="430" y="37" text-anchor="middle" fill="#40a0d0" font-family="sans-serif" font-size="12" font-weight="bold">BUILDING</text>
 
-  <line x1="178" y1="90" x2="196" y2="90" stroke="#2a60a0" stroke-width="1.2" marker-end="url(#ab)"/>
+  <rect x="594" y="14" width="252" height="36" fill="#0a2a40" rx="4"/>
+  <rect x="594" y="36" width="252" height="14" fill="#0a2a40"/>
+  <text x="720" y="37" text-anchor="middle" fill="#40a0d0" font-family="sans-serif" font-size="12" font-weight="bold">RUNTIME</text>
 
-  <!-- Box 2: Plan iteration -->
-  <rect x="198" y="63" width="168" height="54" fill="#0a1828" rx="2" stroke="#2a60a0" stroke-width="1"/>
-  <text x="282" y="80" text-anchor="middle" fill="#60b0ff" font-family="monospace" font-size="9" font-weight="bold">PLAN ITERATION</text>
-  <line x1="208" y1="84" x2="356" y2="84" stroke="#1a3050" stroke-width="0.5"/>
-  <text x="282" y="97" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">LLM-PLAN1 → PLAN4</text>
-  <text x="282" y="109" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">feedback · refine · discard</text>
+  <!-- Phase labels -->
+  <text x="140" y="58" text-anchor="middle" fill="#2a7090" font-family="monospace" font-size="9" letter-spacing="1">Claude used to plan the project</text>
+  <text x="430" y="58" text-anchor="middle" fill="#2a7090" font-family="monospace" font-size="9" letter-spacing="1">Claude used to write the code</text>
+  <text x="720" y="58" text-anchor="middle" fill="#2a7090" font-family="monospace" font-size="9" letter-spacing="1">Claude inside the product</text>
 
-  <line x1="366" y1="90" x2="384" y2="90" stroke="#2a60a0" stroke-width="1.2" marker-end="url(#ab)"/>
+  <!-- ── PLANNING COLUMN ── -->
 
-  <!-- Box 3: Team plan -->
-  <rect x="386" y="63" width="168" height="54" fill="#0a1828" rx="2" stroke="#2a60a0" stroke-width="1"/>
-  <text x="470" y="80" text-anchor="middle" fill="#60b0ff" font-family="monospace" font-size="9" font-weight="bold">5-PERSON PLAN</text>
-  <line x1="396" y1="84" x2="544" y2="84" stroke="#1a3050" stroke-width="0.5"/>
-  <text x="470" y="97" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">Claude picks strongest plan</text>
-  <text x="470" y="109" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">Plan Mode per person</text>
+  <!-- Box P1 -->
+  <rect x="26" y="68" width="228" height="52" fill="#0c1e2e" rx="3" stroke="#1e4a6a" stroke-width="1"/>
+  <text x="140" y="84" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="10" font-weight="bold">CLAUDE.md brief</text>
+  <text x="140" y="99" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">Hackathon rubric fed into context.</text>
+  <text x="140" y="112" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">Claude reads the judging criteria first.</text>
 
-  <line x1="554" y1="90" x2="572" y2="90" stroke="#2a60a0" stroke-width="1.2" marker-end="url(#ab)"/>
+  <line x1="140" y1="120" x2="140" y2="132" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
 
-  <!-- Box 4: Parallel agents -->
-  <rect x="574" y="63" width="366" height="54" fill="#0a1828" rx="2" stroke="#2a60a0" stroke-width="1"/>
-  <text x="757" y="80" text-anchor="middle" fill="#60b0ff" font-family="monospace" font-size="9" font-weight="bold">PARALLEL BUILD — 5 CLAUDE AGENTS</text>
-  <line x1="584" y1="84" x2="930" y2="84" stroke="#1a3050" stroke-width="0.5"/>
-  <text x="757" y="97" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">Rust engine · Python eval · Backend · Frontend · Tester</text>
-  <text x="757" y="109" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">interface contract committed as spec before build started</text>
+  <!-- Box P2 -->
+  <rect x="26" y="134" width="228" height="62" fill="#0c1e2e" rx="3" stroke="#1e4a6a" stroke-width="1"/>
+  <text x="140" y="150" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="10" font-weight="bold">Plan iteration</text>
+  <text x="140" y="165" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">LLM-PLAN1 → PLAN4 in conversation.</text>
+  <text x="140" y="179" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">Claude pushes back, refines, discards.</text>
+  <text x="140" y="190" text-anchor="middle" fill="#4a7a9a" font-family="monospace" font-size="8">4 plan files, each an iteration</text>
 
-  <!-- Section divider -->
-  <line x1="20" y1="128" x2="940" y2="128" stroke="#182840" stroke-width="1" stroke-dasharray="5 3"/>
+  <line x1="140" y1="196" x2="140" y2="208" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
 
-  <!-- ═══ SECTION 2: RUNTIME PIPELINE ═══ -->
-  <text x="20" y="143" fill="#2a60a0" font-family="monospace" font-size="9" letter-spacing="2">// RUNTIME — WHAT HAPPENS WHEN YOU TYPE A PHILOSOPHY</text>
+  <!-- Box P3 -->
+  <rect x="26" y="210" width="228" height="52" fill="#0c1e2e" rx="3" stroke="#1e4a6a" stroke-width="1"/>
+  <text x="140" y="226" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="10" font-weight="bold">Claude picks the best plan</text>
+  <text x="140" y="241" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">All team plans compared side-by-side.</text>
+  <text x="140" y="255" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">Claude selects and explains why.</text>
 
-  <!-- Node 1: User input -->
-  <rect x="20" y="151" width="110" height="50" fill="#0a1828" rx="2" stroke="#405870" stroke-width="1"/>
-  <text x="75" y="169" text-anchor="middle" fill="#5a8aaa" font-family="monospace" font-size="8" font-weight="bold">USER INPUT</text>
-  <line x1="30" y1="172" x2="120" y2="172" stroke="#1a2838" stroke-width="0.5"/>
-  <text x="75" y="184" text-anchor="middle" fill="#a0c0d8" font-family="monospace" font-size="9">"paranoid</text>
-  <text x="75" y="196" text-anchor="middle" fill="#a0c0d8" font-family="monospace" font-size="9">coward"</text>
+  <line x1="140" y1="262" x2="140" y2="274" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
 
-  <line x1="130" y1="176" x2="148" y2="176" stroke="#00aacc" stroke-width="1.5" marker-end="url(#ac)"/>
+  <!-- Box P4 -->
+  <rect x="26" y="276" width="228" height="62" fill="#0c1e2e" rx="3" stroke="#1e4a6a" stroke-width="1"/>
+  <text x="140" y="292" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="10" font-weight="bold">5-person implementation plan</text>
+  <text x="140" y="307" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">Claude writes one plan for the team.</text>
+  <text x="140" y="321" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">Each person selects a role, runs</text>
+  <text x="140" y="333" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">Plan Mode to get their own spec.</text>
 
-  <!-- Node 2: Interpret -->
-  <rect x="150" y="151" width="120" height="50" fill="#06141e" rx="2" stroke="#00aacc" stroke-width="1.5"/>
-  <text x="210" y="167" text-anchor="middle" fill="#00ccff" font-family="monospace" font-size="8" font-weight="bold">① CLAUDE</text>
-  <text x="210" y="179" text-anchor="middle" fill="#00ccff" font-family="monospace" font-size="9">interpret()</text>
-  <line x1="160" y1="182" x2="260" y2="182" stroke="#062030" stroke-width="0.5"/>
-  <text x="210" y="195" text-anchor="middle" fill="#3a8aaa" font-family="monospace" font-size="8">maps to chess concepts</text>
+  <!-- ── BUILDING COLUMN ── -->
 
-  <line x1="270" y1="176" x2="288" y2="176" stroke="#00aacc" stroke-width="1.5" marker-end="url(#ac)"/>
+  <!-- Box B1 -->
+  <rect x="316" y="68" width="228" height="72" fill="#0c1e2e" rx="3" stroke="#1e4a6a" stroke-width="1"/>
+  <text x="430" y="84" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="10" font-weight="bold">5 parallel Claude agents</text>
+  <text x="430" y="99" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">One per layer, each focused.</text>
+  <!-- 5 mini chips -->
+  <rect x="322" y="106" width="74" height="18" fill="#0a2030" rx="2" stroke="#1e4060" stroke-width="0.8"/>
+  <text x="359" y="119" text-anchor="middle" fill="#4090b8" font-family="monospace" font-size="8">Rust engine</text>
+  <rect x="402" y="106" width="62" height="18" fill="#0a2030" rx="2" stroke="#1e4060" stroke-width="0.8"/>
+  <text x="433" y="119" text-anchor="middle" fill="#4090b8" font-family="monospace" font-size="8">Eval gen</text>
+  <rect x="470" y="106" width="68" height="18" fill="#0a2030" rx="2" stroke="#1e4060" stroke-width="0.8"/>
+  <text x="504" y="119" text-anchor="middle" fill="#4090b8" font-family="monospace" font-size="8">Backend</text>
+  <rect x="322" y="128" width="68" height="18" fill="#0a2030" rx="2" stroke="#1e4060" stroke-width="0.8"/>
+  <text x="356" y="141" text-anchor="middle" fill="#4090b8" font-family="monospace" font-size="8">Frontend</text>
+  <rect x="396" y="128" width="62" height="18" fill="#0a2030" rx="2" stroke="#1e4060" stroke-width="0.8"/>
+  <text x="427" y="141" text-anchor="middle" fill="#4090b8" font-family="monospace" font-size="8">Tester</text>
 
-  <!-- Node 3: Generate -->
-  <rect x="290" y="151" width="130" height="50" fill="#06141e" rx="2" stroke="#00aacc" stroke-width="1.5"/>
-  <text x="355" y="167" text-anchor="middle" fill="#00ccff" font-family="monospace" font-size="8" font-weight="bold">② CLAUDE</text>
-  <text x="355" y="179" text-anchor="middle" fill="#00ccff" font-family="monospace" font-size="9">generate()</text>
-  <line x1="300" y1="182" x2="410" y2="182" stroke="#062030" stroke-width="0.5"/>
-  <text x="355" y="195" text-anchor="middle" fill="#3a8aaa" font-family="monospace" font-size="8">writes evaluate(board)</text>
+  <line x1="430" y1="152" x2="430" y2="164" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
 
-  <line x1="420" y1="176" x2="438" y2="176" stroke="#2a60a0" stroke-width="1.5" marker-end="url(#ab)"/>
+  <!-- Box B2 -->
+  <rect x="316" y="166" width="228" height="52" fill="#0c1e2e" rx="3" stroke="#1e4a6a" stroke-width="1"/>
+  <text x="430" y="182" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="10" font-weight="bold">Claude writes all the code</text>
+  <text x="430" y="197" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">Every file committed was Claude-written,</text>
+  <text x="430" y="210" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">reviewed, iterated on by the team.</text>
 
-  <!-- Node 4: Validation -->
-  <rect x="440" y="143" width="138" height="66" fill="#0a1828" rx="2" stroke="#2a60a0" stroke-width="1"/>
-  <text x="509" y="159" text-anchor="middle" fill="#60b0ff" font-family="monospace" font-size="8" font-weight="bold">5-GATE VALIDATION</text>
-  <line x1="450" y1="163" x2="568" y2="163" stroke="#1a3050" stroke-width="0.5"/>
-  <text x="509" y="175" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">syntax · safety · sanity</text>
-  <text x="509" y="187" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">determinism · variance</text>
-  <rect x="450" y="194" width="108" height="8" fill="#0c2040" rx="1"/>
-  <rect x="450" y="194" width="90" height="8" fill="#1a4080" rx="1"/>
-  <text x="509" y="201" text-anchor="middle" fill="#4080c0" font-family="monospace" font-size="7">all gates green</text>
+  <line x1="430" y1="218" x2="430" y2="230" stroke="#2a6090" stroke-width="1.5" marker-end="url(#arr)"/>
 
-  <line x1="578" y1="176" x2="596" y2="176" stroke="#2a60a0" stroke-width="1.5" marker-end="url(#ab)"/>
+  <!-- Box B3 -->
+  <rect x="316" y="232" width="228" height="62" fill="#0c1e2e" rx="3" stroke="#1e4a6a" stroke-width="1"/>
+  <text x="430" y="248" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="10" font-weight="bold">Interface contract</text>
+  <text x="430" y="263" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">Rust↔Python spec designed with Claude,</text>
+  <text x="430" y="277" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">committed before either side built.</text>
+  <text x="430" y="288" text-anchor="middle" fill="#4a7a9a" font-family="monospace" font-size="8">FEN in → centipawn score out</text>
 
-  <!-- Node 5: Rust engine + Python eval (stacked) -->
-  <rect x="598" y="143" width="155" height="56" fill="#081808" rx="2" stroke="#3a8a3a" stroke-width="1.5"/>
-  <text x="675" y="159" text-anchor="middle" fill="#70d070" font-family="monospace" font-size="8" font-weight="bold">RUST ENGINE</text>
-  <line x1="608" y1="163" x2="743" y2="163" stroke="#102010" stroke-width="0.5"/>
-  <text x="675" y="175" text-anchor="middle" fill="#50a050" font-family="monospace" font-size="8">alpha-beta · transposition table</text>
-  <text x="675" y="187" text-anchor="middle" fill="#50a050" font-family="monospace" font-size="8">iterative deepening · MVV-LVA</text>
-  <text x="675" y="199" text-anchor="middle" fill="#3a7a3a" font-family="monospace" font-size="8">search depth 3–5</text>
+  <!-- ── RUNTIME COLUMN ── -->
 
-  <!-- Bidirectional bridge arrow -->
-  <line x1="660" y1="199" x2="660" y2="213" stroke="#3a8a3a" stroke-width="1" stroke-dasharray="2 2"/>
-  <line x1="690" y1="199" x2="690" y2="213" stroke="#7aaa20" stroke-width="1" stroke-dasharray="2 2"/>
-  <text x="675" y="211" text-anchor="middle" fill="#304030" font-family="monospace" font-size="7">stdin/stdout</text>
+  <!-- Box R1 -->
+  <rect x="606" y="68" width="228" height="52" fill="#061824" rx="3" stroke="#006688" stroke-width="1.5"/>
+  <text x="720" y="83" text-anchor="middle" fill="#00c0f0" font-family="sans-serif" font-size="10" font-weight="bold">① interpret()</text>
+  <text x="720" y="98" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="9">Claude maps your description</text>
+  <text x="720" y="111" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="9">into chess concepts.</text>
 
-  <rect x="598" y="215" width="155" height="48" fill="#10180a" rx="2" stroke="#7aaa20" stroke-width="1"/>
-  <text x="675" y="231" text-anchor="middle" fill="#aacc40" font-family="monospace" font-size="8" font-weight="bold">PYTHON evaluate(board)</text>
-  <line x1="608" y1="235" x2="743" y2="235" stroke="#1a2810" stroke-width="0.5"/>
-  <text x="675" y="247" text-anchor="middle" fill="#7a9a30" font-family="monospace" font-size="8">FEN → centipawn score</text>
-  <text x="675" y="258" text-anchor="middle" fill="#7a9a30" font-family="monospace" font-size="8">generated by Claude</text>
+  <line x1="720" y1="120" x2="720" y2="132" stroke="#0090c0" stroke-width="1.5" marker-end="url(#arrc)"/>
 
-  <line x1="753" y1="176" x2="771" y2="176" stroke="#2a60a0" stroke-width="1.5" marker-end="url(#ab)"/>
+  <!-- Box R2 -->
+  <rect x="606" y="134" width="228" height="52" fill="#061824" rx="3" stroke="#006688" stroke-width="1.5"/>
+  <text x="720" y="149" text-anchor="middle" fill="#00c0f0" font-family="sans-serif" font-size="10" font-weight="bold">② generate()</text>
+  <text x="720" y="164" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="9">Claude writes a Python evaluate()</text>
+  <text x="720" y="177" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="9">function from scratch, live.</text>
 
-  <!-- Node 6: Output -->
-  <rect x="773" y="143" width="167" height="120" fill="#0a1828" rx="2" stroke="#2a60a0" stroke-width="1"/>
-  <text x="856" y="159" text-anchor="middle" fill="#60b0ff" font-family="monospace" font-size="8" font-weight="bold">OUTPUT</text>
-  <line x1="783" y1="163" x2="930" y2="163" stroke="#1a3050" stroke-width="0.5"/>
-  <text x="856" y="177" text-anchor="middle" fill="#8ab0d0" font-family="monospace" font-size="8">♟  board move</text>
-  <text x="856" y="191" text-anchor="middle" fill="#8ab0d0" font-family="monospace" font-size="8">▓  win probability bar</text>
-  <text x="856" y="205" text-anchor="middle" fill="#00ccff" font-family="monospace" font-size="8">✦  Claude commentary</text>
-  <text x="856" y="219" text-anchor="middle" fill="#8ab0d0" font-family="monospace" font-size="8">⟳  depth / score / PV</text>
-  <text x="856" y="233" text-anchor="middle" fill="#8ab0d0" font-family="monospace" font-size="8">◈  spectator WebSocket</text>
-  <text x="856" y="247" text-anchor="middle" fill="#8ab0d0" font-family="monospace" font-size="8">⊞  tournament bar chart</text>
+  <line x1="720" y1="186" x2="720" y2="198" stroke="#0090c0" stroke-width="1.5" marker-end="url(#arrc)"/>
 
-  <!-- Code viewer callout -->
-  <rect x="150" y="215" width="270" height="48" fill="#060e18" rx="2" stroke="#1a4060" stroke-width="1" stroke-dasharray="3 2"/>
-  <text x="285" y="231" text-anchor="middle" fill="#3a6080" font-family="monospace" font-size="8" font-weight="bold">CODE VIEWER</text>
-  <text x="285" y="244" text-anchor="middle" fill="#3a6080" font-family="monospace" font-size="8">generated evaluate() shown live on screen</text>
-  <text x="285" y="256" text-anchor="middle" fill="#3a6080" font-family="monospace" font-size="8">iteration history — click any version to replay</text>
-  <!-- Dotted line from generate to code viewer -->
-  <line x1="355" y1="201" x2="355" y2="213" stroke="#1a4060" stroke-width="1" stroke-dasharray="2 2"/>
+  <!-- Box R3 -->
+  <rect x="606" y="200" width="228" height="52" fill="#0c1e2e" rx="3" stroke="#1e4a6a" stroke-width="1"/>
+  <text x="720" y="216" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="10" font-weight="bold">5-gate validation</text>
+  <text x="720" y="231" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">syntax · safety · sanity</text>
+  <text x="720" y="244" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">determinism · variance</text>
 
-  <!-- Section divider -->
-  <line x1="20" y1="278" x2="940" y2="278" stroke="#182840" stroke-width="1" stroke-dasharray="5 3"/>
+  <line x1="720" y1="252" x2="720" y2="264" stroke="#0090c0" stroke-width="1.5" marker-end="url(#arrc)"/>
 
-  <!-- ═══ SECTION 3: TOURNAMENT ═══ -->
-  <text x="20" y="293" fill="#2a60a0" font-family="monospace" font-size="9" letter-spacing="2">// TOURNAMENT MODE</text>
+  <!-- Box R4 -->
+  <rect x="606" y="266" width="228" height="52" fill="#0c1e2e" rx="3" stroke="#1e4a6a" stroke-width="1"/>
+  <text x="720" y="282" text-anchor="middle" fill="#60b0e0" font-family="sans-serif" font-size="10" font-weight="bold">Rust calls eval at every node</text>
+  <text x="720" y="297" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">Claude's function scores each position</text>
+  <text x="720" y="310" text-anchor="middle" fill="#6090b0" font-family="sans-serif" font-size="9">inside the alpha-beta search tree.</text>
 
-  <rect x="20" y="300" width="920" height="52" fill="#080e18" rx="2" stroke="#204060" stroke-width="1"/>
+  <line x1="720" y1="318" x2="720" y2="330" stroke="#0090c0" stroke-width="1.5" marker-end="url(#arrc)"/>
 
-  <!-- 4 personality boxes inside tournament -->
-  <rect x="30" y="308" width="140" height="36" fill="#0a1e30" rx="2" stroke="#00aacc" stroke-width="1"/>
-  <text x="100" y="322" text-anchor="middle" fill="#00ccff" font-family="monospace" font-size="8" font-weight="bold">YOUR PERSONALITY</text>
-  <text x="100" y="337" text-anchor="middle" fill="#3a8aaa" font-family="monospace" font-size="8">Claude-generated eval</text>
+  <!-- Box R5 -->
+  <rect x="606" y="332" width="228" height="52" fill="#061824" rx="3" stroke="#006688" stroke-width="1.5"/>
+  <text x="720" y="347" text-anchor="middle" fill="#00c0f0" font-family="sans-serif" font-size="10" font-weight="bold">③ narrate()</text>
+  <text x="720" y="362" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="9">After every move, Claude narrates</text>
+  <text x="720" y="375" text-anchor="middle" fill="#3a90b0" font-family="sans-serif" font-size="9">in the personality's voice.</text>
 
-  <text x="195" y="328" text-anchor="middle" fill="#2a5070" font-family="monospace" font-size="14">⇄</text>
+  <!-- Horizontal phase arrows between columns -->
+  <line x1="268" y1="240" x2="302" y2="240" stroke="#1a4060" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr)"/>
+  <line x1="558" y1="240" x2="592" y2="240" stroke="#1a4060" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr)"/>
 
-  <rect x="210" y="308" width="130" height="36" fill="#0a1828" rx="2" stroke="#405878" stroke-width="1"/>
-  <text x="275" y="322" text-anchor="middle" fill="#60b0ff" font-family="monospace" font-size="8" font-weight="bold">TAL</text>
-  <text x="275" y="337" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">aggressive attacker</text>
-
-  <text x="365" y="328" text-anchor="middle" fill="#2a5070" font-family="monospace" font-size="14">⇄</text>
-
-  <rect x="380" y="308" width="130" height="36" fill="#0a1828" rx="2" stroke="#405878" stroke-width="1"/>
-  <text x="445" y="322" text-anchor="middle" fill="#60b0ff" font-family="monospace" font-size="8" font-weight="bold">KARPOV</text>
-  <text x="445" y="337" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">positional squeeze</text>
-
-  <text x="535" y="328" text-anchor="middle" fill="#2a5070" font-family="monospace" font-size="14">⇄</text>
-
-  <rect x="550" y="308" width="130" height="36" fill="#0a1828" rx="2" stroke="#405878" stroke-width="1"/>
-  <text x="615" y="322" text-anchor="middle" fill="#60b0ff" font-family="monospace" font-size="8" font-weight="bold">PETROSIAN</text>
-  <text x="615" y="337" text-anchor="middle" fill="#7a9ab8" font-family="monospace" font-size="8">fortress defender</text>
-
-  <text x="705" y="320" text-anchor="middle" fill="#2a5070" font-family="monospace" font-size="8">12 games</text>
-  <text x="705" y="333" text-anchor="middle" fill="#2a5070" font-family="monospace" font-size="8">round-robin</text>
-
-  <rect x="740" y="308" width="190" height="36" fill="#0a1e10" rx="2" stroke="#3a8a3a" stroke-width="1"/>
-  <text x="835" y="322" text-anchor="middle" fill="#70d070" font-family="monospace" font-size="8" font-weight="bold">RESULTS</text>
-  <text x="835" y="337" text-anchor="middle" fill="#50a050" font-family="monospace" font-size="8">W/D/L bar chart + JSON report</text>
-
-  <!-- Section divider -->
-  <line x1="20" y1="364" x2="940" y2="364" stroke="#182840" stroke-width="1" stroke-dasharray="5 3"/>
-
-  <!-- ═══ SECTION 4: FUTURE ═══ -->
-  <text x="20" y="379" fill="#2a60a0" font-family="monospace" font-size="9" letter-spacing="2">// NEXT VERSION</text>
-
-  <rect x="20" y="387" width="290" height="52" fill="#0e0818" rx="2" stroke="#6030a0" stroke-width="1"/>
-  <text x="165" y="403" text-anchor="middle" fill="#9060d0" font-family="monospace" font-size="9" font-weight="bold">PyO3 BRIDGE</text>
-  <line x1="30" y1="407" x2="300" y2="407" stroke="#1a0830" stroke-width="0.5"/>
-  <text x="165" y="420" text-anchor="middle" fill="#6040a0" font-family="monospace" font-size="8">Rust calls Python in-process (no subprocess)</text>
-  <text x="165" y="432" text-anchor="middle" fill="#6040a0" font-family="monospace" font-size="8">10–100× faster → search depth 8–12</text>
-
-  <rect x="325" y="387" width="300" height="52" fill="#0e0818" rx="2" stroke="#6030a0" stroke-width="1"/>
-  <text x="475" y="403" text-anchor="middle" fill="#9060d0" font-family="monospace" font-size="9" font-weight="bold">ADAPTIVE PERSONALITY</text>
-  <line x1="335" y1="407" x2="615" y2="407" stroke="#1a0830" stroke-width="0.5"/>
-  <text x="475" y="420" text-anchor="middle" fill="#6040a0" font-family="monospace" font-size="8">eval regenerates mid-game based on position</text>
-  <text x="475" y="432" text-anchor="middle" fill="#6040a0" font-family="monospace" font-size="8">losing personalities re-prompted → evolve</text>
-
-  <rect x="640" y="387" width="300" height="52" fill="#0e0818" rx="2" stroke="#6030a0" stroke-width="1"/>
-  <text x="790" y="403" text-anchor="middle" fill="#9060d0" font-family="monospace" font-size="9" font-weight="bold">LICHESS BOT + NNUE</text>
-  <line x1="650" y1="407" x2="930" y2="407" stroke="#1a0830" stroke-width="0.5"/>
-  <text x="790" y="420" text-anchor="middle" fill="#6040a0" font-family="monospace" font-size="8">deploy any personality as rated bot</text>
-  <text x="790" y="432" text-anchor="middle" fill="#6040a0" font-family="monospace" font-size="8">train small net on self-play data</text>
-
-  <!-- Footer -->
-  <line x1="0" y1="452" x2="960" y2="452" stroke="#2a60a0" stroke-width="1" opacity="0.4"/>
-  <rect x="0" y="452" width="960" height="88" fill="#050c14"/>
-
-  <!-- Demo moment -->
-  <text x="480" y="473" text-anchor="middle" fill="#2a60a0" font-family="monospace" font-size="9" letter-spacing="2">// THE DEMO MOMENT</text>
-  <text x="480" y="494" text-anchor="middle" fill="#5a8aaa" font-family="monospace" font-size="10">type  </text>
-  <text x="480" y="494" text-anchor="middle" font-family="monospace" font-size="10">
-    <tspan fill="#5a8aaa">type  </tspan>
-    <tspan fill="#a0c8e0">"a paranoid coward that never attacks"</tspan>
-    <tspan fill="#5a8aaa">  →  code appears  →  play 3 moves  →  engine retreats everything</tspan>
+  <!-- ── FOOTER ── -->
+  <rect x="14" y="458" width="832" height="28" fill="#07111c" rx="3" stroke="#1e3a52" stroke-width="1"/>
+  <text x="430" y="470" text-anchor="middle" fill="#2a6080" font-family="monospace" font-size="9" font-weight="bold">NEXT: </text>
+  <text x="430" y="470" text-anchor="middle" font-family="monospace" font-size="9">
+    <tspan fill="#2a6080" font-weight="bold">NEXT: </tspan>
+    <tspan fill="#5a3a90">  PyO3 bridge (10–100× faster search)  </tspan>
+    <tspan fill="#2a4060">·</tspan>
+    <tspan fill="#5a3a90">  adaptive personality (eval regenerates mid-game)</tspan>
+    <tspan fill="#2a4060">  ·</tspan>
+    <tspan fill="#5a3a90">  Lichess bot deployment</tspan>
   </text>
-  <text x="480" y="514" text-anchor="middle" fill="#00aacc" font-family="monospace" font-size="10" font-style="italic">"The Coward tucks the bishop back, unwilling to risk a single exchange."</text>
-  <text x="480" y="532" text-anchor="middle" fill="#2a5070" font-family="monospace" font-size="9">— Claude commentary, generated live from the personality you described</text>
+  <text x="430" y="480" text-anchor="middle" fill="#2a4060" font-family="monospace" font-size="8">PyO3 bridge (10–100× faster)   ·   adaptive personality (eval regenerates mid-game)   ·   Lichess bot</text>
 
 </svg>
