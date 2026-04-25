@@ -95,6 +95,7 @@ class TournamentUIRequest(BaseModel):
     user_name: str = "You"
     games_per_pair: int = 2   # small default — full tournament via `make tournament`
     movetime_ms: int = 200
+    search_depth: int = 2
 
 
 @app.post("/api/tournament")
@@ -108,5 +109,5 @@ async def run_tournament_from_ui(req: TournamentUIRequest) -> dict:
         "Petrosian": str(personalities_dir / "petrosian.py"),
     }
     return await asyncio.to_thread(
-        run_tournament, engines, req.games_per_pair, req.movetime_ms
+        run_tournament, engines, req.games_per_pair, req.movetime_ms, req.search_depth
     )
