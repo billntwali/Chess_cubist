@@ -389,9 +389,9 @@ Recent testing:
 
 ## 10. Results
 
-![Quality Metrics Summary](quality_metrics_summary.png)
 
-This is the one-slide proof that the personalities are measurable, not just vibes: prompt reliability, personality fingerprints, distinctiveness, philosophy-play alignment, commentary consistency, and tournament standings.
+
+Through these metrics we prove the personalities are measurable: prompt reliability, personality fingerprints, commentary consistency, and tournament standings.
 
 ### Prompt Reliability
 
@@ -422,19 +422,6 @@ Each failure became a validation rule, prompt constraint, or fallback behavior.
 
 Each personality is evaluated across a shared suite of positions. Wide score distributions mean the engine has strong opinions; flat distributions mean the personality is getting drowned out by material.
 
-![Personality Distinctiveness Score](quality_metrics_pds.png)
-
-The distinctiveness score uses pairwise Cohen's d over the personality fingerprints. Large effects mean two engines evaluate the same positions in genuinely different ways.
-
-![Philosophy-Play Alignment](quality_metrics_ppar.png)
-
-**PPAR: Philosophy-Play Alignment Rate**
-
-PPAR compares each personality's score to the Classic baseline across attack, structure, and defense positions. Expected pattern:
-
-- Tal should like attack positions.
-- Karpov should like structure positions.
-- Petrosian should like defensive positions.
 
 ![Commentary Consistency Score](quality_metrics_ccs.png)
 
