@@ -71,15 +71,15 @@ export default function Board({ gameId, onMove, fen, playerColor, thinking }: Pr
   const customSquareStyles: Record<string, React.CSSProperties> = {};
 
   if (selectedSquare) {
-    customSquareStyles[selectedSquare] = { backgroundColor: "rgba(255, 214, 0, 0.55)" };
+    customSquareStyles[selectedSquare] = { backgroundColor: "rgba(124, 92, 252, 0.55)" };
   }
 
   for (const sq of legalSquares) {
     const chess = new Chess(displayFen);
     const isCapture = !!chess.get(sq as any);
     customSquareStyles[sq] = isCapture
-      ? { background: "radial-gradient(transparent 55%, rgba(255, 214, 0, 0.75) 55%)", borderRadius: "0%" }
-      : { background: "radial-gradient(rgba(255, 214, 0, 0.65) 28%, transparent 28%)" };
+      ? { background: "radial-gradient(transparent 55%, rgba(124, 92, 252, 0.75) 55%)", borderRadius: "0%" }
+      : { background: "radial-gradient(rgba(124, 92, 252, 0.65) 28%, transparent 28%)" };
   }
 
   return (
