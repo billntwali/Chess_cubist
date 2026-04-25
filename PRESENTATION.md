@@ -602,6 +602,19 @@ FEN in -> centipawn score out
 - JSON tournament results
 - README, `docs/TESTING.md`, `docs/FEATURES.md`, and presentation docs
 
+### Live Walkthrough
+
+![Personality generation screen](demo_ui_generate.png)
+
+This is the generation stage. The user types a personality prompt, Claude interprets it into chess strategy language, and the app prepares a validated eval function for play.
+
+![Live game with win probability and commentary](demo_ui_play.png)
+
+This is the live game stage. The generated engine is running, the win probability bar updates from centipawn evaluation, and the commentary panel narrates each move in the personality voice.
+
+**Closer:**
+> *"One text box. Any chess personality you can describe. Claude writes the brain, the Rust engine plays it, and Claude narrates every move in character. That's Chess Forge."*
+
 ---
 
 ## 13. Closing
