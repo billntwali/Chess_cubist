@@ -20,10 +20,9 @@ pub fn capture_moves(pos: &Chess) -> MoveList {
 /// Higher score = explore first.
 fn mvv_lva_score(pos: &Chess, mv: &Move) -> i32 {
     match mv {
-        Move::Normal { to, .. } => {
+        Move::Normal { from, to, .. } => {
             let victim = pos.board().piece_at(*to).map_or(0, |p| role_value(p.role));
-            let attacker = pos.board().piece_at(mv.from().unwrap())
-                .map_or(0, |p| role_value(p.role));
+            let attacker = pos.board().piece_at(*from).map_or(0, |p| role_value(p.role));
             victim * 10 - attacker
         }
         Move::EnPassant { .. } => 10 * 100 - 100, // pawn captures pawn

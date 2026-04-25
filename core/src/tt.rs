@@ -1,6 +1,6 @@
 /// Transposition table using Zobrist hashing.
 use shakmaty::zobrist::{Zobrist64, ZobristHash};
-use shakmaty::Chess;
+use shakmaty::{Chess, EnPassantMode};
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum NodeType {
@@ -49,6 +49,6 @@ impl TranspositionTable {
     }
 
     fn hash(&self, pos: &Chess) -> u64 {
-        pos.zobrist_hash::<Zobrist64>().0
+        pos.zobrist_hash::<Zobrist64>(EnPassantMode::Legal).0
     }
 }

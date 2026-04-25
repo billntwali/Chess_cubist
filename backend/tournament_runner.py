@@ -4,7 +4,22 @@ import json
 import subprocess
 import uuid
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
+
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+router = APIRouter()
+
+
+class TournamentRequest(BaseModel):
+    engines: dict[str, str]  # {name: eval_file_path}
+    games_per_pair: int = 10
+
+
+@router.post("/tournament")
+async def run_tournament_endpoint(request: TournamentRequest) -> dict:
+    return await asyncio.to_thread(run_tournament, request.engines, request.games_per_pair)
 
 RESULTS_DIR = Path(__file__).parents[1] / "tournament" / "results"
 RUST_BINARY = Path(__file__).parents[1] / "core" / "target" / "release" / "chess_forge"
@@ -85,12 +100,13 @@ def _play_game(white_path: str, black_path: str, movetime_ms: int = 500) -> str:
     return "draw"
 
 
-def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10) -> dict:
+def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10, movetime_ms: int = 500) -> dict:
     """Run a round-robin tournament.
 
     Args:
         engine_paths: {name: eval_file_path}
         games_per_pair: number of games per matchup (split evenly as white/black)
+        movetime_ms: milliseconds per move (lower = faster games for demos)
     Returns:
         standings dict with W/D/L per engine
     """
@@ -103,7 +119,7 @@ def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10) -> di
             a, b = names[i], names[j]
             for g in range(games_per_pair):
                 white_name, black_name = (a, b) if g % 2 == 0 else (b, a)
-                result = _play_game(engine_paths[white_name], engine_paths[black_name])
+                result = _play_game(engine_paths[white_name], engine_paths[black_name], movetime_ms=movetime_ms)
                 if result == "white":
                     standings[white_name]["W"] += 1
                     standings[black_name]["L"] += 1
@@ -118,7 +134,7 @@ def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10) -> di
     session_id = uuid.uuid4().hex[:8]
     output = {
         "session_id": session_id,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "standings": standings,
         "matchups": matchups,
     }
