@@ -1,0 +1,88 @@
+{
+  "session_id": "e48cff2c",
+  "timestamp": "2026-04-25T16:25:00.332047+00:00",
+  "standings": {
+    "play like a harvard ": {
+      "W": 0,
+      "D": 1,
+      "L": 5
+    },
+    "Tal": {
+      "W": 1,
+      "D": 5,
+      "L": 0
+    },
+    "Karpov": {
+      "W": 2,
+      "D": 3,
+      "L": 1
+    },
+    "Petrosian": {
+      "W": 3,
+      "D": 3,
+      "L": 0
+    }
+  },
+  "matchups": [
+    {
+      "white": "play like a harvard ",
+      "black": "Tal",
+      "result": "black"
+    },
+    {
+      "white": "Tal",
+      "black": "play like a harvard ",
+      "result": "draw"
+    },
+    {
+      "white": "play like a harvard ",
+      "black": "Karpov",
+      "result": "black"
+    },
+    {
+      "white": "Karpov",
+      "black": "play like a harvard ",
+      "result": "white"
+    },
+    {
+      "white": "play like a harvard ",
+      "black": "Petrosian",
+      "result": "black"
+    },
+    {
+      "white": "Petrosian",
+      "black": "play like a harvard ",
+      "result": "white"
+    },
+    {
+      "white": "Tal",
+      "black": "Karpov",
+      "result": "draw"
+    },
+    {
+      "white": "Karpov",
+      "black": "Tal",
+      "result": "draw"
+    },
+    {
+      "white": "Tal",
+      "black": "Petrosian",
+      "result": "draw"
+    },
+    {
+      "white": "Petrosian",
+      "black": "Tal",
+      "result": "draw"
+    },
+    {
+      "white": "Karpov",
+      "black": "Petrosian",
+      "result": "black"
+    },
+    {
+      "white": "Petrosian",
+      "black": "Karpov",
+      "result": "draw"
+    }
+  ]
+}

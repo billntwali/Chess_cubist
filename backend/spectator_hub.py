@@ -11,6 +11,9 @@ class SpectatorHub:
         await ws.accept()
         self._rooms.setdefault(game_id, []).append(ws)
 
+    def viewer_count(self, game_id: str) -> int:
+        return len(self._rooms.get(game_id, []))
+
     async def leave(self, game_id: str, ws: WebSocket):
         room = self._rooms.get(game_id, [])
         if ws in room:

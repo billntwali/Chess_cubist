@@ -76,14 +76,25 @@ async def game_ws(websocket: WebSocket, game_id: str):
 
 @app.websocket("/ws/spectate/{game_id}")
 async def spectate_ws(websocket: WebSocket, game_id: str):
-    from backend.game_manager import hub
+    from backend.game_manager import hub, _games
+
+    async def notify_player():
+        state = _games.get(game_id)
+        if state:
+            try:
+                await state.player_ws.send_json({"viewer_count": hub.viewer_count(game_id)})
+            except Exception:
+                pass
+
     await hub.join(game_id, websocket)
+    await notify_player()
     try:
         while True:
-            # Keep the connection alive; spectators only receive, never send
+            # Keep alive; spectators only receive, never send
             await websocket.receive_text()
     except (WebSocketDisconnect, Exception):
         await hub.leave(game_id, websocket)
+        await notify_player()
 
 
 # ---------------------------------------------------------------------------

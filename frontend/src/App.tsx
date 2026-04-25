@@ -4,10 +4,15 @@ import CommentaryFeed from "./components/CommentaryFeed";
 import EngineInfo from "./components/EngineInfo";
 import PhilosophyInput from "./components/PhilosophyInput";
 import SpectatorRoom from "./components/SpectatorRoom";
+import SpectatorView from "./components/SpectatorView";
 import TournamentResults from "./components/TournamentResults";
 import WinProbBar from "./components/WinProbBar";
 
 export default function App() {
+  const spectateMatch = window.location.pathname.match(/^\/spectate\/([a-f0-9]+)$/);
+  if (spectateMatch) {
+    return <SpectatorView gameId={spectateMatch[1]} />;
+  }
   const [evalPath, setEvalPath] = useState("");
   const [philosophy, setPhilosophy] = useState("");
   const [gameId, setGameId] = useState<string | null>(null);
@@ -52,6 +57,7 @@ export default function App() {
       const ws = new WebSocket(`ws://${window.location.host}/ws/game/${game_id}`);
       ws.onmessage = (e) => {
         const data = JSON.parse(e.data);
+        if (data.viewer_count !== undefined) { setViewerCount(data.viewer_count); return; }
         if (data.error) { alert(`Engine error: ${data.error}`); return; }
         if (data.fen) setFen(data.fen);
         if (data.eval_cp !== undefined) setEvalCp(data.eval_cp);
