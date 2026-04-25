@@ -79,7 +79,7 @@ def generate(interpreted: str, max_retries: int = 2) -> str:
     for attempt in range(max_retries + 1):
         msg = _client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=1024,
+            max_tokens=4096,
             messages=messages,
         )
         code = _strip_markdown(msg.content[0].text)
