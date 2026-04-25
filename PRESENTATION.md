@@ -170,8 +170,6 @@ This split keeps the project stable:
 
 ---
 
-## 8. 
-
 Chess Forge builds on existing chess-engine protocols and formats.
 
 ### UCI: Universal Chess Interface
