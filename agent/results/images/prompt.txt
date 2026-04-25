@@ -1,0 +1,37 @@
+Convert this diagram into a hand-drawn, whiteboard-style illustration:
+
+Style requirements:
+- Sketchy, slightly wobbly lines — nothing perfectly straight
+- Warm cream or off-white background, like paper
+- Three color-coded columns: amber/orange for Planning, green for Building, purple/violet for Runtime
+- Rounded boxes with visible hand-drawn strokes
+- Clear downward arrows within each column, dashed arrows connecting columns left-to-right
+- Casual handwritten font, large enough to read clearly
+- Decorative small stars or doodles in the margins
+- The overall feel should look like a talented person sketched this on a whiteboard
+
+Diagram content:
+
+Title: "How we used Claude"
+
+PLANNING column (amber/orange):
+  Box 1: "CLAUDE.md brief" — Hackathon rubric fed into Claude's context
+  Box 2: "Plan iteration" — LLM-PLAN1 → PLAN4, Claude pushes back and refines
+  Box 3: "Claude picks best plan" — All team ideas compared, Claude selects and explains
+  Box 4: "Per-person Plan Mode" — Each member picks a role, Claude writes their spec
+
+BUILDING column (green):
+  Box 1: "5 parallel Claude agents" — One per layer (chips: Rust engine, Eval generator, Backend, Frontend, Tester)
+  Box 2: "Claude writes all the code" — Every file written and reviewed with Claude
+  Box 3: "Interface contract" — Rust↔Python spec designed with Claude, committed before build started
+
+RUNTIME column (purple):
+  Box 1: "① Interpret" — Maps your words into chess concepts
+  Box 2: "② Generate" — Writes evaluate(board) live, from scratch
+  Box 3: "5-gate validation" — syntax · safety · sanity · determinism · variance
+  Box 4: "③ Narrate" — After every move, Claude narrates in the personality's voice
+
+Use the reference images below for style inspiration only — do not copy their content.
+Reference image topics searched: - hand-drawn whiteboard flowchart sketch colorful
+- chess engine diagram software architecture
+- Claude AI logo anthropic
