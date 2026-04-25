@@ -1,0 +1,12 @@
+[package]
+name = "chess_forge"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "chess_forge"
+path = "src/main.rs"
+
+[dependencies]
+shakmaty = "0.27"
+vampirc-uci = "0.11"
