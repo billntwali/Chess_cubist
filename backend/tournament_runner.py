@@ -119,7 +119,7 @@ def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10, movet
             a, b = names[i], names[j]
             for g in range(games_per_pair):
                 white_name, black_name = (a, b) if g % 2 == 0 else (b, a)
-                result = _play_game(engine_paths[white_name], engine_paths[black_name], movetime_ms)
+                result = _play_game(engine_paths[white_name], engine_paths[black_name], movetime_ms=movetime_ms)
                 if result == "white":
                     standings[white_name]["W"] += 1
                     standings[black_name]["L"] += 1
