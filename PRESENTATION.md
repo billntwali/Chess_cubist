@@ -24,7 +24,63 @@ Each prompt becomes a real chess engine personality. The engine does not just ge
 
 ---
 
-## 2. What We Built
+## 2. How We Built It
+
+### Phase 1: Ideation
+
+We started with five AI engines and generated ten distinct idea plans covering a range of approaches — from personality-driven eval functions to adversarial self-play trainers to opening-book generators.
+
+We then asked Claude to evaluate each plan, producing a structured breakdown of pros and cons:
+
+- feasibility within hackathon time constraints
+- originality relative to existing chess engines
+- how well it mapped to the judging criteria (engine quality, AI usage, process, engineering)
+
+### Phase 2: Convergence
+
+With ten plans evaluated, we ran a second round of AI consultation. We fed each of three AI systems — **Antigravity**, **Claude**, and **Codex** — the same inputs:
+
+1. The `CLAUDE.md` file with full hackathon criteria
+2. The ten idea plans with their pros and cons
+
+Each was asked to produce one final recommended plan, either by choosing the strongest idea or integrating the best elements across ideas.
+
+We then manually read all three final plans and chose the one that made the most sense: the natural-language personality builder backed by a generated eval function and a Rust search engine. It had the clearest scope, the best story for AI usage, and the most natural parallelization.
+
+### Phase 3: Planning
+
+With the idea confirmed, we returned to Claude. Feeding it the `CLAUDE.md` criteria again, we asked it to produce a complete project structure: directory layout, module responsibilities, and interface contracts between components.
+
+This gave us a shared blueprint before anyone wrote a line of code.
+
+### Phase 4: Implementation
+
+We split the project into five parallel workstreams so multiple AI accounts and team members could work independently:
+
+1. Rust chess engine (search, UCI protocol)
+2. Python eval generator and validator
+3. FastAPI backend and WebSocket layer
+4. React + TypeScript frontend
+5. Tournament runner, testing, and documentation
+
+The interface contract — FEN string in, centipawn integer out — let each workstream proceed without blocking the others.
+
+### Phase 5: Testing
+
+After implementation, each team member independently ran the full application and tested manually. We then built a testing agent combining **Antigravity**, **Codex**, and **Claude** that automated this loop:
+
+1. Generate a test prompt (e.g. a personality description or edge-case position)
+2. Send the prompt to the running system
+3. Make moves on the board and observe behavior
+4. Detect any failures or regressions
+5. Fix the issue
+6. Repeat
+
+We ran **200 iterations per person** across separate Claude Code sessions. Each failure became either a validation rule, a prompt constraint, or a fallback behavior — the same feedback loop that produced the five-gate validator and the EGRI metric described in the Results section.
+
+---
+
+## 3. What We Built
 
 Chess Forge is an AI chess personality lab with five core pieces:
 
@@ -56,7 +112,7 @@ Chess Forge is an AI chess personality lab with five core pieces:
 
 ---
 
-## 3. Demo Flow
+## 4. Demo Flow
 
 Run:
 
@@ -92,7 +148,7 @@ One-line demo close:
 
 ---
 
-## 4. How Claude Is Used
+## 5. How Claude Is Used
 
 Claude was not just a coding tool — it was involved in every phase of the project, from planning to runtime.
 
@@ -173,7 +229,7 @@ This makes the engine's style legible to the user — closing the loop between w
 
 ---
 
-## 5. Critical AI Evaluation: The Five-Gate Validator
+## 6. Critical AI Evaluation: The Five-Gate Validator
 
 We do not trust generated code blindly.
 
@@ -213,7 +269,7 @@ This is the core of our AI usage story: Claude is powerful, but we evaluate and 
 
 ---
 
-## 6. Chess Engine Core
+## 7. Chess Engine Core
 
 The chess engine is written in Rust.
 
@@ -237,7 +293,7 @@ This split keeps the project stable:
 
 ---
 
-## 7. Protocols and Foundations
+## 8. Protocols and Foundations
 
 Chess Forge builds on existing chess-engine protocols and formats.
 
@@ -327,7 +383,7 @@ So:
 
 ---
 
-## 8. System Architecture
+## 9. System Architecture
 
 ```text
 User prompt
@@ -374,7 +430,7 @@ Technology stack:
 
 ---
 
-## 9. Testing and Rigor
+## 10. Testing and Rigor
 
 We tested the system at multiple levels.
 
@@ -410,7 +466,7 @@ Recent testing:
 
 ---
 
-## 10. Results
+## 11. Results
 
 ![Quality Metrics Summary](assets/presentation/quality_metrics_summary.png)
 
@@ -495,7 +551,7 @@ Petrosian: 1W / 0D / 2L
 
 ---
 
-## 11. How This Meets the Hackathon Criteria
+## 12. How This Meets the Hackathon Criteria
 
 ### Chess Engine Quality
 
@@ -544,7 +600,7 @@ FEN in -> centipawn score out
 
 ---
 
-## 12. Closing
+## 13. Closing
 
 Chess Forge is not just another chess bot.
 
