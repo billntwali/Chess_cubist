@@ -65,7 +65,7 @@ That's Chess Forge.
 
 ![EGRI — Prompt Iteration History](quality_metrics_egri.png)
 
-Started at 40% all-gates pass rate. Six prompt iterations — each failure annotated with the exact bug (used `random`, iterated over `board.king()`, etc.). Landed at 100% with a retry loop. This is what "critically evaluate AI-generated code" actually looks like.
+> **Eval Generation Reliability Index (EGRI)** — two bars per prompt version: grey = syntax pass rate, green = all 5 validation gates pass rate. Calculated as `(functions passing all gates) / (total generation attempts)` across 20 sample generations per round. Each annotation names the exact bug class that caused failures at that version. Starts at 40% (v1) and reaches 100% (v2 + retry loop) after six prompt iterations. Higher is better — a flat green bar at 100% means the codegen prompt is fully hardened against known failure modes.
 
 ---
 
@@ -73,17 +73,33 @@ Started at 40% all-gates pass rate. Six prompt iterations — each failure annot
 
 ![Quality Metrics Summary](quality_metrics_summary.png)
 
+> **Quality Metrics Summary** — a six-panel dashboard showing all metrics at once. Top row (left to right): Fingerprint σ (how opinionated each engine is), Cohen's d heatmap (how distinct each pair is), EGRI over prompt iterations. Bottom row: PPAR delta chart, CCS commentary alignment bars, tournament final standings. Each panel is a condensed version of the detailed charts below. Use this as the one-slide proof that personalities differ in measurably different ways.
+
+---
+
 **Personalities are provably distinct:**
+
+![Personality Fingerprints](quality_metrics_fingerprint.png)
+
+> **Personality Fingerprints** — four bar charts, one per engine, showing the centipawn score assigned to each of the 20 test positions (x-axis: position label, y-axis: centipawns from White's perspective). The horizontal line is the mean across all positions; the subtitle shows σ (standard deviation). A wide spread = the engine has strong opinions. A flat distribution = the personality is getting drowned out by material. Calculated by calling `evaluate(chess.Board(fen))` on each position and clipping to ±2000cp.
+
+![Personality Distinctiveness Score](quality_metrics_pds.png)
+
+> **Personality Distinctiveness Score (PDS / Cohen's d)** — left panel: heatmap of all pairwise Cohen's d values; right panel: bar chart of the same values for each unique pair. Cohen's d = `|mean_A − mean_B| / pooled_std_dev` computed over each engine's 20-position fingerprint scores. Colour coding: red bars = large effect (d ≥ 0.8, genuinely different play), orange = medium (0.5–0.8), grey = small (< 0.5). The key test: Tal vs Petrosian should have the highest d — they are philosophically opposite.
 
 ![Philosophy-Play Alignment](quality_metrics_ppar.png)
 
-Petrosian scores −60cp vs. Classic on attack positions — it genuinely avoids tactical complications. Karpov and Tal score higher on structure positions. The evals aren't just different code — they produce measurably different chess.
+> **Philosophy-Play Alignment Rate (PPAR)** — grouped bar chart with three position categories on the x-axis (Attack, Structure, Defense) and one bar per engine. Each bar shows the average centipawn delta vs. the Classic baseline: `avg(personality_score − classic_score)` across positions in that category. Positive delta = the engine rates those positions more favourably than pure material counting would predict — the personality is showing up. Expected pattern: Tal positive on Attack, Karpov positive on Structure, Petrosian positive on Defense. Deviations from this pattern flag a personality that isn't translating philosophy into evaluation.
+
+![Commentary Consistency Score](quality_metrics_ccs.png)
+
+> **Commentary Consistency Score (CCS)** — three panels, one per personality. Each panel shows three bars: the keyword hit rate against the aggressive, positional, and defensive lexicons. The green bar is the engine's own expected style. Calculated as `keyword_hits / total_words`, where a hit is any word containing a keyword stem (e.g. "attack", "sacrifice", "open" for aggressive). The correct style bar should be tallest — if it isn't, the commentary isn't personality-specific.
 
 **Tournament standings:**
 
 ![Tournament](quality_metrics_tournament.png)
 
-Tal wins (10pts). Petrosian second (8pts). The "Coward" personality scores 0 — which is the point. Personalities are real.
+> **Tournament Standings** — bar chart of final points (Win = 2, Draw = 1, Loss = 0) from a round-robin where every engine plays every other engine twice. Points = `W × 2 + D`. Loaded directly from `tournament/results/{session_id}.json`. The Coward engine (user-generated, over-penalizes aggression) scoring 0 is the intended result — it validates that personality differences are large enough to determine game outcomes, not just evaluation scores.
 
 ---
 
