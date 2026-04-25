@@ -34,5 +34,5 @@ bench:
 	python3 tournament/bench_stockfish.py --skill 5 --games 10
 
 dev:
-	uvicorn backend.main:app --reload --port 8000 &
+	set -a && source .env && set +a && uvicorn backend.main:app --reload --port 8000 &
 	cd frontend && npm run dev

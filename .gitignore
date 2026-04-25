@@ -1,0 +1,17 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.pyc
+eval/generated/*.py
+
+# Rust build artifacts
+core/target/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# macOS
+.DS_Store
