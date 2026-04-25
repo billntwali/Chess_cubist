@@ -3,7 +3,7 @@
 import asyncio
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -63,6 +63,21 @@ class StartGameRequest(BaseModel):
 
 @app.post("/api/game/start")
 async def start_game_endpoint(req: StartGameRequest):
+    eval_file = Path(req.eval_path)
+    if not eval_file.exists():
+        raise HTTPException(status_code=400, detail="Eval file not found. Please regenerate.")
+
+    # Re-validate on game start to catch old/generated files that may no longer
+    # satisfy current safety or consistency gates.
+    from eval.generator import validate
+    code = eval_file.read_text()
+    ok, err = validate(code)
+    if not ok:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Eval failed validation at game start: {err}. Please regenerate.",
+        )
+
     from backend.game_manager import reserve_game
     game_id = reserve_game(req.eval_path, req.philosophy)
     return {"game_id": game_id}

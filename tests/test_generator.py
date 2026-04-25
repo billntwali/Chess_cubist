@@ -39,6 +39,40 @@ def evaluate(board):
     return int(board.turn)
 """
 
+MUTATES_BOARD_TURN = """
+def evaluate(board):
+    import chess
+    board.turn = chess.BLACK
+    return 0
+"""
+
+CALLS_PUSH = """
+def evaluate(board):
+    import chess
+    board.push(chess.Move.null())
+    board.pop()
+    return 0
+"""
+
+TURN_BIASED_EVAL = """
+def evaluate(board):
+    import chess
+    values = {
+        chess.PAWN: 100,
+        chess.KNIGHT: 320,
+        chess.BISHOP: 330,
+        chess.ROOK: 500,
+        chess.QUEEN: 900,
+    }
+    score = 0
+    for pt, val in values.items():
+        score += val * len(board.pieces(pt, chess.WHITE))
+        score -= val * len(board.pieces(pt, chess.BLACK))
+    if board.turn == chess.BLACK:
+        score -= 180
+    return score
+"""
+
 START_BIASED_EVAL = """
 def evaluate(board):
     import chess
@@ -88,6 +122,24 @@ def test_builtin_shadowing_caught():
     ok, err = validate(SHADOWS_INT)
     assert not ok
     assert "built-in name" in err
+
+
+def test_board_turn_mutation_caught():
+    ok, err = validate(MUTATES_BOARD_TURN)
+    assert not ok
+    assert "mutate board attribute" in err
+
+
+def test_mutating_board_methods_caught():
+    ok, err = validate(CALLS_PUSH)
+    assert not ok
+    assert "mutating board method" in err
+
+
+def test_turn_bias_caught():
+    ok, err = validate(TURN_BIASED_EVAL)
+    assert not ok
+    assert "Perspective consistency" in err
 
 
 def test_quick_check_catches_start_position_bias():
