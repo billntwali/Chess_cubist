@@ -56,7 +56,12 @@ def _read_until(proc: subprocess.Popen, token: str) -> list[str]:
 
 MAX_GAME_MOVES = 150  # hard cap to prevent runaway games
 
-def _play_game(white_path: str, black_path: str, movetime_ms: int = 500) -> str:
+def _play_game(
+    white_path: str,
+    black_path: str,
+    movetime_ms: int = 500,
+    search_depth: int = 2,
+) -> str:
     """Play one game, return 'white' | 'black' | 'draw'."""
     import chess
     white = _spawn_engine(white_path)
@@ -69,7 +74,7 @@ def _play_game(white_path: str, black_path: str, movetime_ms: int = 500) -> str:
             engine = white if board.turn == chess.WHITE else black
             pos_cmd = "position startpos" + (" moves " + " ".join(moves) if moves else "")
             engine.stdin.write(pos_cmd + "\n")
-            engine.stdin.write(f"go movetime {movetime_ms} depth 4\n")
+            engine.stdin.write(f"go movetime {movetime_ms} depth {search_depth}\n")
             engine.stdin.flush()
 
             best_move = ""
@@ -105,13 +110,19 @@ def _play_game(white_path: str, black_path: str, movetime_ms: int = 500) -> str:
     return "draw"
 
 
-def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10, movetime_ms: int = 500) -> dict:
+def run_tournament(
+    engine_paths: dict[str, str],
+    games_per_pair: int = 10,
+    movetime_ms: int = 500,
+    search_depth: int = 2,
+) -> dict:
     """Run a round-robin tournament.
 
     Args:
         engine_paths: {name: eval_file_path}
         games_per_pair: number of games per matchup (split evenly as white/black)
         movetime_ms: milliseconds per move (lower = faster games for demos)
+        search_depth: fixed UCI search depth for each tournament move
     Returns:
         standings dict with W/D/L per engine
     """
@@ -124,7 +135,12 @@ def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10, movet
             a, b = names[i], names[j]
             for g in range(games_per_pair):
                 white_name, black_name = (a, b) if g % 2 == 0 else (b, a)
-                result = _play_game(engine_paths[white_name], engine_paths[black_name], movetime_ms=movetime_ms)
+                result = _play_game(
+                    engine_paths[white_name],
+                    engine_paths[black_name],
+                    movetime_ms=movetime_ms,
+                    search_depth=search_depth,
+                )
                 if result == "white":
                     standings[white_name]["W"] += 1
                     standings[black_name]["L"] += 1
