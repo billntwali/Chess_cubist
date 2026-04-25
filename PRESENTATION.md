@@ -94,9 +94,38 @@ One-line demo close:
 
 ## 4. How Claude Is Used
 
-Claude appears in the system in three places.
+Claude was not just a coding tool — it was involved in every phase of the project, from planning to runtime.
 
-### Step 1: Interpret the Personality
+![How we used Claude](how_we_used_claude.png)
+
+---
+
+### Phase 1: Planning
+
+Claude was the first team member to read the brief.
+
+- We wrote a `CLAUDE.md` file containing the hackathon rubric and judging criteria. Claude read this before any planning began.
+- We iterated through four plan files (`LLM-PLAN1` → `LLM-PLAN4`). In each round, Claude pushed back on weak ideas, refined strong ones, and discarded approaches that didn't serve the rubric.
+- All five team members submitted their own plan. Claude compared them and selected the strongest one, explaining its reasoning.
+- Claude then wrote a five-person implementation plan. Each team member selected a role, and Plan Mode generated their individual spec.
+
+---
+
+### Phase 2: Building
+
+Claude wrote essentially all the code.
+
+- Every team member had their own Claude agent focused on their layer: Rust engine, eval generator, backend, frontend, tester.
+- The Rust-to-Python interface contract was designed in conversation with Claude and committed as a spec *before* either side was built. This allowed both streams to build in parallel without blocking each other.
+- Code review and iteration happened in conversation with Claude throughout.
+
+---
+
+### Phase 3: Runtime — Claude Inside the Engine
+
+Claude appears at three points every time a user interacts with the app.
+
+**Step 1: Interpret the Personality**
 
 Model: Claude Haiku
 
@@ -113,13 +142,9 @@ Reward small positional advantages, centralized pieces, durable pawn structures,
 active kings in simplified positions, and steady pressure over reckless material grabs.
 ```
 
-Why Haiku:
+Why Haiku: fast, lower cost — the task is short-form interpretation, not code generation. Impossible inputs like "only move pawns" are redirected to the nearest chess-expressible equivalent.
 
-- Fast
-- Lower cost
-- The task is short-form interpretation, not complex code generation
-
-### Step 2: Generate the Evaluation Function
+**Step 2: Generate the Evaluation Function**
 
 Model: Claude Sonnet
 
@@ -130,14 +155,11 @@ def evaluate(board: chess.Board) -> int:
     ...
 ```
 
-This function scores a chess position in centipawns from White's perspective.
+This function scores a chess position in centipawns from White's perspective. It is the engine's "brain" — called at every leaf node of the Rust search tree.
 
-Why Sonnet:
+Why Sonnet: code generation is more complex. It must reason about chess concepts and produce executable Python that doesn't crash, isn't constant, and reflects the stated philosophy.
 
-- Code generation is more complex.
-- It must reason about chess concepts and produce executable Python.
-
-### Step 3: Narrate Moves
+**Step 3: Narrate Moves**
 
 After the engine moves, Claude writes one sentence of commentary in the personality's voice.
 
@@ -147,7 +169,7 @@ Example:
 The Coward tucks the bishop back, unwilling to risk a single exchange.
 ```
 
-This makes the engine's style legible to a human audience.
+This makes the engine's style legible to the user — closing the loop between what they described and what they observe on the board.
 
 ---
 
