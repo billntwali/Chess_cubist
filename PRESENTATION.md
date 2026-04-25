@@ -78,6 +78,8 @@ After implementation, each team member independently ran the full application an
 
 We ran **200 iterations per person** across separate Claude Code sessions. Each failure became either a validation rule, a prompt constraint, or a fallback behavior — the same feedback loop that produced the five-gate validator and the EGRI metric described in the Results section.
 
+![Hackathon Chess Engine Development Workflow](assets/presentation/hackathon_workflow.png)
+
 ---
 
 ## 3. What We Built
@@ -151,8 +153,6 @@ One-line demo close:
 ## 5. How Claude Is Used
 
 Claude was not just a coding tool — it was involved in every phase of the project, from planning to runtime.
-
-![How we used Claude](assets/presentation/how_we_used_claude.png)
 
 ---
 
