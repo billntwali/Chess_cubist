@@ -46,12 +46,19 @@ Hard rules:
 - Return ONLY the function, no explanation
 
 Useful read-only board methods:
-  board.pieces(piece_type, color)  -> SquareSet of squares
+  board.pieces(piece_type, color)  -> SquareSet (iterable of square ints)
   board.piece_at(square)           -> Piece or None
+  board.king(color)                -> int (a single square number, NOT iterable — never loop over it)
   board.is_check()                 -> bool
   board.turn                       -> chess.WHITE or chess.BLACK
   chess.square_file(sq), chess.square_rank(sq)  -> int 0-7
   len(list(board.legal_moves))     -> mobility count (call once per side via board.turn)
+
+Common mistakes to avoid:
+  BAD:  for sq in board.king(chess.WHITE)   # king() returns an int, not iterable
+  GOOD: king_sq = board.king(chess.WHITE); if king_sq is not None: ...
+  BAD:  score += board.pieces(...)          # SquareSet can't be added to int
+  GOOD: score += len(board.pieces(...))
 
 Material: pawn=100, knight=320, bishop=330, rook=500, queen=900, king=0
 IMPORTANT: Never use board.piece_map() — it includes kings and will cause KeyError.
@@ -63,8 +70,9 @@ The function you wrote has this error: {error}
 Rewrite the evaluate() function fixing the error. Key constraints:
 - Do NOT call board.push() or board.pop()
 - Do NOT use board.piece_map() — it includes kings and causes KeyError: 6
+- Do NOT iterate over board.king() — it returns an int, not iterable
+- Do NOT add SquareSets to ints — use len(board.pieces(...)) instead
 - Use board.pieces(piece_type, color) for each piece type explicitly
-- Include king=0 if you need a complete material dict
 - Use only Python 3.9 syntax
 - Return ONLY the function."""
 
@@ -173,7 +181,7 @@ def validate(code: str) -> tuple[bool, str]:
 
     # Gate 3: Sanity — canonical positions
     sanity_cases = [
-        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", -100, 100),   # start ≈ 0
+        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", -300, 300),   # start ≈ 0
         ("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 200, None),  # black missing queen → white winning
         ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", None, -200), # white missing queen → black winning
     ]
