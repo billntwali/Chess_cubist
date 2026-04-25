@@ -1,12 +1,12 @@
-"""Two-step Claude pipeline: interpret philosophy → generate evaluate() function."""
+"""Two-step LLM pipeline: interpret philosophy → generate evaluate() function."""
 import ast
 import math
 import uuid
 import os
 import chess
-import anthropic
+from openai import OpenAI
 
-_client = anthropic.Anthropic()
+_client = OpenAI()
 
 BANNED_NAMES = {"os", "subprocess", "open", "eval", "exec", "random", "time", "__import__"}
 
@@ -54,12 +54,12 @@ and use only Python 3.9 compatible syntax. Return ONLY the function."""
 
 def interpret(description: str) -> str:
     """Step 1: map user description to a chess-expressible concept."""
-    msg = _client.messages.create(
-        model="claude-haiku-4-5-20251001",
+    msg = _client.chat.completions.create(
+        model="gpt-4o-mini",
         max_tokens=256,
         messages=[{"role": "user", "content": INTERPRET_PROMPT.format(description=description)}],
     )
-    return msg.content[0].text.strip()
+    return msg.choices[0].message.content.strip()
 
 
 def _strip_markdown(code: str) -> str:
@@ -77,12 +77,13 @@ def generate(interpreted: str, max_retries: int = 2) -> str:
     messages = [{"role": "user", "content": CODEGEN_PROMPT.format(interpreted=interpreted)}]
 
     for attempt in range(max_retries + 1):
-        msg = _client.messages.create(
-            model="claude-sonnet-4-6",
+        msg = _client.chat.completions.create(
+            model="gpt-4o-mini",
             max_tokens=4096,
             messages=messages,
         )
-        code = _strip_markdown(msg.content[0].text)
+        raw = msg.choices[0].message.content
+        code = _strip_markdown(raw)
 
         # Early syntax check — retry immediately rather than surfacing to UI
         try:
@@ -91,8 +92,7 @@ def generate(interpreted: str, max_retries: int = 2) -> str:
         except SyntaxError as e:
             if attempt == max_retries:
                 return code  # Return anyway; validate() will report the error
-            # Feed the error back to Claude for self-correction
-            messages.append({"role": "assistant", "content": msg.content[0].text})
+            messages.append({"role": "assistant", "content": raw})
             messages.append({"role": "user", "content": RETRY_PROMPT.format(error=str(e))})
 
     return code

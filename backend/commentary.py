@@ -1,7 +1,7 @@
-"""Post-move narration: Claude describes each engine move in the philosophy's voice."""
-import anthropic
+"""Post-move narration: LLM describes each engine move in the philosophy's voice."""
+from openai import OpenAI
 
-_client = anthropic.Anthropic()
+_client = OpenAI()
 
 COMMENTARY_PROMPT = """\
 Chess engine playing "{philosophy}" just played {san} in this position: {fen}
@@ -31,11 +31,11 @@ async def get_commentary(philosophy: str, move_uci: str, fen: str, eval_cp: int)
     )
 
     def _call():
-        msg = _client.messages.create(
-            model="claude-haiku-4-5-20251001",
+        msg = _client.chat.completions.create(
+            model="gpt-4o-mini",
             max_tokens=128,
             messages=[{"role": "user", "content": prompt}],
         )
-        return msg.content[0].text.strip()
+        return msg.choices[0].message.content.strip()
 
     return await asyncio.to_thread(_call)
