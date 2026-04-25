@@ -37,19 +37,32 @@ Philosophy: {interpreted}
 Hard rules:
 - Python 3.9 compatible syntax only (no match statements, no X | Y union types)
 - Import only: chess, math
+- Do NOT call board.push() or board.pop() — treat the board as read-only
+- Do NOT use chess.Move.null() or any null move tricks
 - No random, time, network, file I/O, or side effects
 - Must not raise exceptions on any legal board state
 - Deterministic — same board always returns same score
 - Return an integer
 - Return ONLY the function, no explanation
 
+Useful read-only board methods:
+  board.pieces(piece_type, color)  -> SquareSet of squares
+  board.piece_at(square)           -> Piece or None
+  board.is_check()                 -> bool
+  board.turn                       -> chess.WHITE or chess.BLACK
+  chess.square_file(sq), chess.square_rank(sq)  -> int 0-7
+  len(list(board.legal_moves))     -> mobility count (call once per side via board.turn)
+
 Material: pawn=100, knight=320, bishop=330, rook=500, queen=900"""
 
 RETRY_PROMPT = """\
 The function you wrote has this error: {error}
 
-Rewrite the evaluate() function fixing the error. Follow all original rules,
-and use only Python 3.9 compatible syntax. Return ONLY the function."""
+Rewrite the evaluate() function fixing the error. Key constraints:
+- Do NOT call board.push() or board.pop()
+- Do NOT use board.legal_moves for the opponent (board.turn gives current side)
+- Use only Python 3.9 syntax
+- Return ONLY the function."""
 
 
 def interpret(description: str) -> str:
@@ -84,18 +97,43 @@ def generate(interpreted: str, max_retries: int = 2) -> str:
         )
         code = _strip_markdown(msg.content[0].text)
 
-        # Early syntax check — retry immediately rather than surfacing to UI
-        try:
-            ast.parse(code)
-            return code  # Syntax is fine; full validation happens in validate()
-        except SyntaxError as e:
-            if attempt == max_retries:
-                return code  # Return anyway; validate() will report the error
-            # Feed the error back to Claude for self-correction
-            messages.append({"role": "assistant", "content": msg.content[0].text})
-            messages.append({"role": "user", "content": RETRY_PROMPT.format(error=str(e))})
+        # Early syntax + sanity check — retry with the error rather than surfacing to UI
+        error = _quick_check(code)
+        if error is None:
+            return code  # Passes quick checks; full validation happens in validate()
+        if attempt == max_retries:
+            return code  # Last attempt — let validate() report the full error
+        messages.append({"role": "assistant", "content": msg.content[0].text})
+        messages.append({"role": "user", "content": RETRY_PROMPT.format(error=error)})
 
     return code
+
+
+def _quick_check(code: str):
+    """Return an error string if the code has a syntax error or crashes on the start position,
+    otherwise return None."""
+    try:
+        ast.parse(code)
+    except SyntaxError as e:
+        return f"SyntaxError: {e}"
+
+    namespace: dict = {"chess": chess, "math": math}
+    try:
+        exec(code, namespace)
+    except Exception as e:
+        return f"Execution error: {e}"
+
+    fn = namespace.get("evaluate")
+    if fn is None:
+        return "No 'evaluate' function defined"
+
+    try:
+        result = fn(chess.Board())
+        int(result)
+    except Exception as e:
+        return f"Crashed on starting position: {e}"
+
+    return None
 
 
 def validate(code: str) -> tuple[bool, str]:
