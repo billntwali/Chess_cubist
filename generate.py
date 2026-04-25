@@ -239,6 +239,7 @@ def main():
     parser.add_argument("--svg", default=str(SVG_PATH), help="Path to SVG blueprint")
     parser.add_argument("--out", default=str(OUTPUT_PNG), help="Output PNG path")
     parser.add_argument("--no-tavily", action="store_true", help="Skip Tavily image search")
+    parser.add_argument("--prompt-only", action="store_true", help="Assemble prompt and copy to clipboard, skip API call")
     args = parser.parse_args()
 
     svg_path = Path(args.svg)
@@ -249,8 +250,8 @@ def main():
     # Keys
     gemini_key = os.environ.get("GEMINI_API_KEY")
     tavily_key = os.environ.get("TAVILY_API_KEY")
-    if not gemini_key:
-        print("✗ GEMINI_API_KEY not set")
+    if not gemini_key and not args.prompt_only:
+        print("✗ GEMINI_API_KEY not set — run with --prompt-only to just build the prompt")
         sys.exit(1)
 
     # 1. Load SVG
@@ -278,12 +279,21 @@ def main():
 
     # 4. Assemble prompt
     prompt = assemble_prompt(descriptions)
-    prompt_path = IMAGES_DIR / "prompt.txt"
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+    prompt_path = IMAGES_DIR / "prompt.txt"
     prompt_path.write_text(prompt)
-    print(f"[4/5] Prompt assembled ({len(prompt)} chars) → saved to {prompt_path.name}")
+    print(f"[4/5] Prompt assembled ({len(prompt)} chars) → {prompt_path}")
 
-    # 5. Gemini
+    # --prompt-only: copy to clipboard and open file, skip API
+    if args.prompt_only:
+        import subprocess
+        subprocess.run("pbcopy", input=prompt.encode(), check=False)
+        print(f"\n✓ Prompt copied to clipboard.")
+        print(f"  Paste it into gemini.google.com or aistudio.google.com")
+        print(f"  Full prompt also saved to: {prompt_path}")
+        return
+
+    # 5. Gemini API
     print(f"[5/5] Calling Gemini image generation...")
     image_bytes = call_gemini(prompt, image_paths, gemini_key)
 
