@@ -11,19 +11,15 @@ _client = anthropic.Anthropic()
 BANNED_NAMES = {"os", "subprocess", "open", "eval", "exec", "random", "time", "__import__"}
 
 INTERPRET_PROMPT = """\
-The user wants a chess engine with this philosophy: "{description}"
+The user wants a chess engine with this personality: "{description}"
 
-Restate this as a concrete chess POSITION evaluation strategy in one sentence —
-something expressible as: "score this board state highly when [X]."
+Describe how this player approaches chess in 1-2 vivid sentences. Write it as a character portrait —
+what does this player obsess over, fear, ignore, or crave on the board?
 
-Use only chess concepts: piece activity, king safety, pawn structure, material
-balance, mobility, open files, outposts, etc.
+Ground it in real chess concepts (piece activity, king safety, pawn structure, open files, outposts, material),
+but let the personality come through. Be specific and colorful, not clinical.
 
-If the input describes a move rule (e.g. "only move pawns"): redirect to the
-closest positional philosophy and prefix with:
-"Note: your input was a move rule — here's the closest positional equivalent:"
-
-Return ONLY the one-sentence restatement."""
+Return ONLY the 1-2 sentence description."""
 
 CODEGEN_PROMPT = """\
 You are a chess engine programmer. Write a Python function:
@@ -62,7 +58,14 @@ Common mistakes to avoid:
 
 Material: pawn=100, knight=320, bishop=330, rook=500, queen=900, king=0
 IMPORTANT: Never use board.piece_map() — it includes kings and will cause KeyError.
-Instead use board.pieces(piece_type, color) for each piece type explicitly."""
+Instead use board.pieces(piece_type, color) for each piece type explicitly.
+
+Bonus sizing — this is critical for the personality to actually show up in play:
+- Personality bonuses must be LARGE enough to compete with material (50–150cp per feature)
+- If the philosophy prizes aggression, king-attack bonuses should reach 100–200cp total
+- If the philosophy ignores safety, penalize own king safety by -100 to -200cp
+- Weak bonuses (5–20cp) get drowned out by material and the personality disappears
+- Do NOT be conservative — the whole point is that this engine plays differently"""
 
 RETRY_PROMPT = """\
 The function you wrote has this error: {error}
@@ -103,7 +106,7 @@ def generate(interpreted: str, max_retries: int = 2) -> str:
 
     for attempt in range(max_retries + 1):
         msg = _client.messages.create(
-            model="claude-haiku-4-5-20251001",
+            model="claude-sonnet-4-6",
             max_tokens=4096,
             messages=messages,
         )
