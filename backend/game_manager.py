@@ -4,6 +4,7 @@ import chess
 import subprocess
 import uuid
 from pathlib import Path
+from typing import Optional
 
 from fastapi import WebSocket, WebSocketDisconnect
 
@@ -25,7 +26,7 @@ class GameState:
         self.game_id = game_id
         self.eval_path = eval_path
         self.player_ws = player_ws
-        self.engine_proc: subprocess.Popen | None = None
+        self.engine_proc: Optional[subprocess.Popen] = None
         self.board = chess.Board()
         self.moves: list[str] = []
 
@@ -34,7 +35,7 @@ class GameState:
             raise FileNotFoundError(
                 f"Rust binary not found at {RUST_BINARY}. Run: make build"
             )
-        eval_cmd = f"python {EVAL_SERVER} {self.eval_path}"
+        eval_cmd = f"python3 {EVAL_SERVER} {self.eval_path}"
         self.engine_proc = subprocess.Popen(
             [str(RUST_BINARY), "--eval-server", eval_cmd],
             stdin=subprocess.PIPE,
@@ -67,7 +68,7 @@ class GameState:
         if self.moves:
             position_cmd += " moves " + " ".join(self.moves)
         self._send(position_cmd)
-        self._send(f"go movetime {movetime_ms}")
+        self._send(f"go movetime {movetime_ms} depth 4")
 
         best_move = ""
         eval_cp = 0

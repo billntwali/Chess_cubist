@@ -27,7 +27,7 @@ EVAL_SERVER = Path(__file__).parents[1] / "eval" / "eval_server.py"
 
 
 def _spawn_engine(eval_path: str) -> subprocess.Popen:
-    eval_cmd = f"python {EVAL_SERVER} {eval_path}"
+    eval_cmd = f"python3 {EVAL_SERVER} {eval_path}"
     proc = subprocess.Popen(
         [str(RUST_BINARY), "--eval-server", eval_cmd],
         stdin=subprocess.PIPE,
@@ -67,7 +67,7 @@ def _play_game(white_path: str, black_path: str, movetime_ms: int = 500) -> str:
             engine = white if board.turn == chess.WHITE else black
             pos_cmd = "position startpos" + (" moves " + " ".join(moves) if moves else "")
             engine.stdin.write(pos_cmd + "\n")
-            engine.stdin.write(f"go movetime {movetime_ms}\n")
+            engine.stdin.write(f"go movetime {movetime_ms} depth 4\n")
             engine.stdin.flush()
 
             best_move = ""
