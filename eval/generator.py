@@ -4,11 +4,9 @@ import math
 import uuid
 import os
 import chess
-import google.generativeai as genai
+from google import genai
 
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY", ""))
-_fast_model = genai.GenerativeModel("gemini-2.0-flash")
-_capable_model = genai.GenerativeModel("gemini-2.0-flash")
+_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY", ""))
 
 BANNED_NAMES = {"os", "subprocess", "open", "eval", "exec", "random", "time", "__import__"}
 
@@ -49,13 +47,19 @@ Material: pawn=100, knight=320, bishop=330, rook=500, queen=900"""
 
 def interpret(description: str) -> str:
     """Step 1: map user description to a chess-expressible concept."""
-    response = _fast_model.generate_content(INTERPRET_PROMPT.format(description=description))
+    response = _client.models.generate_content(
+        model="gemini-1.5-flash",
+        contents=INTERPRET_PROMPT.format(description=description),
+    )
     return response.text.strip()
 
 
 def generate(interpreted: str) -> str:
     """Step 2: generate a Python evaluate() function from the interpreted description."""
-    response = _capable_model.generate_content(CODEGEN_PROMPT.format(interpreted=interpreted))
+    response = _client.models.generate_content(
+        model="gemini-1.5-flash",
+        contents=CODEGEN_PROMPT.format(interpreted=interpreted),
+    )
     return response.text.strip()
 
 

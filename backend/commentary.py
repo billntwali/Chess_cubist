@@ -1,9 +1,8 @@
 """Post-move narration: Gemini describes each engine move in the philosophy's voice."""
 import os
-import google.generativeai as genai
+from google import genai
 
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY", ""))
-_model = genai.GenerativeModel("gemini-2.0-flash")
+_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY", ""))
 
 COMMENTARY_PROMPT = """\
 Chess engine playing "{philosophy}" just played {san} in this position: {fen}
@@ -33,7 +32,10 @@ async def get_commentary(philosophy: str, move_uci: str, fen: str, eval_cp: int)
     )
 
     def _call():
-        response = _model.generate_content(prompt)
+        response = _client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt,
+        )
         return response.text.strip()
 
     return await asyncio.to_thread(_call)

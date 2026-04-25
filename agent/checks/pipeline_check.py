@@ -26,6 +26,7 @@ def _spawn(eval_path: str) -> subprocess.Popen:
         [str(BINARY), "--eval-server", eval_cmd],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
         text=True,
     )
     _uci_init(proc)
