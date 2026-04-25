@@ -61,7 +61,7 @@ class GameState:
             if line == token:
                 return lines
 
-    def get_best_move(self, movetime_ms: int = 1000) -> tuple[str, int, str]:
+    def get_best_move(self, movetime_ms: int = 500) -> tuple[str, int, str]:
         """Return (best_move_uci, eval_cp, pv)."""
         position_cmd = "position startpos"
         if self.moves:
