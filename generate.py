@@ -155,43 +155,79 @@ def assemble_prompt(descriptions: list[str]) -> str:
 # Step 5: Call Gemini
 # ---------------------------------------------------------------------------
 
+IMAGE_GEN_MODELS = [
+    "gemini-2.0-flash-preview-image-generation",
+    "gemini-2.0-flash-exp",
+    "gemini-1.5-pro",
+]
+
+
+def _try_generate_content(client, model: str, parts: list) -> bytes | None:
+    """Attempt generate_content with IMAGE modality. Returns image bytes or None."""
+    response = client.models.generate_content(
+        model=model,
+        contents=types.Content(parts=parts, role="user"),
+        config=types.GenerateContentConfig(
+            response_modalities=["IMAGE", "TEXT"],
+        ),
+    )
+    for part in response.candidates[0].content.parts:
+        if part.inline_data and part.inline_data.mime_type.startswith("image"):
+            return part.inline_data.data
+    return None
+
+
+def _try_imagen(client, prompt: str) -> bytes | None:
+    """Attempt Imagen 3 text-to-image as final fallback."""
+    response = client.models.generate_images(
+        model="imagen-3.0-generate-001",
+        prompt=prompt[:2000],  # Imagen has a shorter prompt limit
+        config=types.GenerateImagesConfig(number_of_images=1),
+    )
+    if response.generated_images:
+        return response.generated_images[0].image.image_bytes
+    return None
+
+
 def call_gemini(prompt: str, image_paths: list[Path], api_key: str) -> bytes | None:
-    """Send prompt + reference images to Gemini and return raw PNG bytes."""
+    """Try each image-generation model in order, return first successful image bytes."""
     client = genai.Client(api_key=api_key)
 
     parts: list = [types.Part.from_text(text=prompt)]
-
     for path in image_paths:
         if not path.exists():
             continue
-        suffix = path.suffix.lower()
-        mime = "image/png" if suffix == ".png" else "image/jpeg"
+        mime = "image/png" if path.suffix.lower() == ".png" else "image/jpeg"
         try:
             parts.append(types.Part.from_bytes(data=path.read_bytes(), mime_type=mime))
-            print(f"  Attached: {path.name} ({mime})")
+            print(f"  Attached: {path.name}")
         except Exception as e:
             print(f"  Skipped {path.name}: {e}")
 
-    print(f"  Sending {len(parts)} parts to Gemini...")
+    print(f"  Sending {len(parts)} part(s) to Gemini...")
+
+    for model in IMAGE_GEN_MODELS:
+        print(f"  Trying model: {model}")
+        try:
+            result = _try_generate_content(client, model, parts)
+            if result:
+                print(f"  ✓ Got image from {model}")
+                return result
+            print(f"  {model} returned no image, trying next...")
+        except Exception as e:
+            print(f"  {model} failed: {e}")
+
+    # Final fallback: Imagen (text-only, no reference images)
+    print("  Trying Imagen 3 as fallback (text-only)...")
     try:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash-preview-image-generation",
-            contents=types.Content(parts=parts, role="user"),
-            config=types.GenerateContentConfig(
-                response_modalities=["IMAGE", "TEXT"],
-            ),
-        )
-        for part in response.candidates[0].content.parts:
-            if part.inline_data and part.inline_data.mime_type.startswith("image"):
-                return part.inline_data.data
-        print("  No image in Gemini response — text only:")
-        for part in response.candidates[0].content.parts:
-            if part.text:
-                print(f"  {part.text[:200]}")
-        return None
+        result = _try_imagen(client, prompt)
+        if result:
+            print("  ✓ Got image from Imagen 3")
+            return result
     except Exception as e:
-        print(f"  Gemini call failed: {e}")
-        return None
+        print(f"  Imagen 3 failed: {e}")
+
+    return None
 
 
 # ---------------------------------------------------------------------------
