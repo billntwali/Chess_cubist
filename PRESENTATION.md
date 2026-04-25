@@ -1,127 +1,554 @@
-# Chess Forge — Presentation Script
+# Chess Forge — Hackathon Presentation
+
+## 1. Opening Pitch
+
+Chess platforms already have personality bots. You can play "Magnus," "Hikaru," or a preset aggressive bot.
+
+But those personalities are mostly fixed products. You choose them; you do not create them. You also rarely get to see how the bot actually thinks.
+
+Chess Forge asks a different question:
+
+> What if you could describe any chess personality in plain English, watch Claude write its evaluation function live, then play against that engine and benchmark it in a tournament?
+
+Examples:
+
+```text
+play like magnus carlsen
+play like a reckless attacker
+only move pawns if possible
+play like a coward who avoids all trades
+```
+
+Each prompt becomes a real chess engine personality. The engine does not just get a new name or skin; its position evaluation logic changes.
 
 ---
 
-## The Problem & The Idea
+## 2. What We Built
 
-Chess.com has personality bots — Magnus, Hikaru, preset styles. You pick one and play. That's it. You can't invent your opponent. You can't see how it thinks. The AI is a skin on top.
+Chess Forge is an AI chess personality lab with five core pieces:
 
-We asked: what if you could *describe* any chess personality in plain English, and the engine's actual brain gets written live, on screen, in front of you?
+1. **Natural-language personality builder**
+   - User describes a chess style.
+   - Claude turns it into a chess-expressible strategy.
 
-> *"A paranoid coward that never attacks"*
-> *"A suicidal gambler that sacrifices everything for an attack"*
-> *"An obsessive pawn hoarder that never trades material"*
+2. **Generated evaluation functions**
+   - Claude writes a Python `evaluate(board) -> int` function.
+   - That function returns a centipawn score.
+   - The eval function becomes the personality's "brain."
 
-Each one becomes a different engine with different logic. You play against your own creation, watch it narrate its moves in character, and then pit it against classic grandmaster styles in a live tournament.
+3. **Rust chess engine**
+   - Rust handles legal chess and search.
+   - The engine uses alpha-beta search, iterative deepening, quiescence search, move ordering, and a transposition table.
 
-That's Chess Forge.
+4. **Interactive frontend**
+   - Users see the generated code.
+   - They play against the engine.
+   - They see eval score, principal variation, win probability, and commentary.
 
----
-
-## How We Used Claude to Plan & Build
-
-**Claude wasn't just a tool — it was a team member**
-
-![How we used Claude](how_we_used_claude.png)
-
-**Planning:**
-- Fed the hackathon rubric into a `CLAUDE.md` file — Claude read the judging criteria first
-- Iterated through four plan files (`LLM-PLAN1` → `PLAN4`), getting pushback, refinements, and discarded ideas each round
-- Submitted all team plans; Claude compared them and picked the strongest one
-- Claude wrote a five-person implementation plan — each of us selected a role, and Plan Mode generated our individual specs
-
-**Building:**
-- Every team member had their own Claude agent focused on their layer — Rust engine, eval generator, backend, frontend, tester
-- Claude wrote essentially all the code
-- The Rust-Python interface contract was designed in conversation with Claude and committed as a spec *before* either side was built — both streams built in parallel without stepping on each other
+5. **Tournament runner**
+   - User-generated engines compete against built-in personalities:
+     - Tal
+     - Karpov
+     - Petrosian
+     - Classic baseline
+   - Results are saved as JSON and displayed in the UI.
 
 ---
 
-## How Claude Works Inside the Engine
+## 3. Demo Flow
 
-**Every time you type a philosophy, this pipeline runs:**
+Run:
 
-1. **Interpret (Claude Haiku)** — Maps your description to a chess-expressible concept. "Paranoid coward" becomes: *"Maximizes king safety, penalizes open files near own king, avoids all trades."* Impossible inputs like "only move pawns" get redirected gracefully.
+```bash
+make dev
+```
 
-2. **Generate (Claude Sonnet)** — Writes a Python `evaluate(board) -> int` function from scratch, live. The code appears on screen as it generates. This function decides how the engine values every position.
+Then:
 
-3. **5-gate validation** — Before the engine touches a game: syntax, safety, sanity on canonical positions, determinism, variance. Any failure surfaces the exact error and prompts a rephrase.
+1. Type a personality:
 
-4. **Rust calls Python at every node** — For each leaf node in the search tree, Rust sends a FEN to the Python eval server and gets back a centipawn score. The personality runs at the heart of every search.
+```text
+play like magnus carlsen
+```
 
-5. **Narrate (Claude Haiku)** — After every engine move, Claude writes one sentence in the personality's voice: *"The Coward tucks the bishop back, unwilling to risk a single exchange."*
+2. Claude interprets it as a chess strategy.
+3. Claude generates the eval function.
+4. The app validates the generated code.
+5. The generated code appears in the UI.
+6. User plays against the engine.
+7. The UI shows:
+   - board state
+   - centipawn score
+   - win probability bar
+   - principal variation
+   - commentary in the personality's voice
+8. Click **Run Tournament**.
+9. The generated engine plays a round-robin against built-in personalities.
+
+One-line demo close:
+
+> One text box. Any chess personality. Claude writes the brain, Rust plays the chess, and the tournament proves whether the personality actually behaves differently.
+
+---
+
+## 4. How Claude Is Used
+
+Claude appears in the system in three places.
+
+### Step 1: Interpret the Personality
+
+Model: Claude Haiku
+
+Input:
+
+```text
+play like magnus carlsen
+```
+
+Output:
+
+```text
+Reward small positional advantages, centralized pieces, durable pawn structures,
+active kings in simplified positions, and steady pressure over reckless material grabs.
+```
+
+Why Haiku:
+
+- Fast
+- Lower cost
+- The task is short-form interpretation, not complex code generation
+
+### Step 2: Generate the Evaluation Function
+
+Model: Claude Sonnet
+
+Claude writes:
+
+```python
+def evaluate(board: chess.Board) -> int:
+    ...
+```
+
+This function scores a chess position in centipawns from White's perspective.
+
+Why Sonnet:
+
+- Code generation is more complex.
+- It must reason about chess concepts and produce executable Python.
+
+### Step 3: Narrate Moves
+
+After the engine moves, Claude writes one sentence of commentary in the personality's voice.
+
+Example:
+
+```text
+The Coward tucks the bishop back, unwilling to risk a single exchange.
+```
+
+This makes the engine's style legible to a human audience.
 
 ---
 
-## The Engineering
+## 5. Critical AI Evaluation: The Five-Gate Validator
 
-- **Rust engine** — alpha-beta, iterative deepening, quiescence search, transposition table, MVV-LVA. UCI compliant — loads into any chess GUI in the world
-- **Persistent eval bridge** — Rust spawns one Python process per game. FEN in, centipawn score out. No recompiling for new personalities
-- **Test suite** — perft tests at depth 1–4 (including Kiwipete), mate-in-N, eval sanity, 5-gate generator tests
-- **Pipeline tester** — `make agent` runs 5 automated checks end-to-end: build, eval server, generator, UCI handshake, 3 live games
-- **Prompt iteration logged** — every prompt is in `prompts/` with iteration notes. The AI usage story is documented, not just claimed
+We do not trust generated code blindly.
 
-**We measured prompt quality rigorously:**
+Every generated eval function must pass five gates before it can play.
 
-![EGRI — Prompt Iteration History](quality_metrics_egri.png)
+| Gate | What It Checks |
+|------|----------------|
+| **Syntax** | Code parses as valid Python |
+| **Safety** | No unsafe imports or banned names like `os`, `subprocess`, `open`, `eval`, `exec`, `random`, or `time` |
+| **Sanity** | Starting position is roughly equal; queen-up positions score correctly |
+| **Determinism** | Same board returns the same score every time |
+| **Variance** | Scores differ across positions, proving the eval is not constant |
 
-> **Eval Generation Reliability Index (EGRI)** — two bars per prompt version: grey = syntax pass rate, green = all 5 validation gates pass rate. Calculated as `(functions passing all gates) / (total generation attempts)` across 20 sample generations per round. Each annotation names the exact bug class that caused failures at that version. Starts at 40% (v1) and reaches 100% (v2 + retry loop) after six prompt iterations. Higher is better — a flat green bar at 100% means the codegen prompt is fully hardened against known failure modes.
+### Real Failure We Found
 
+The prompt:
 
+```text
+play like magnus carlsen
+```
 
-## Demo
+once produced malformed Python:
 
-`make dev` → type a philosophy → Generate → Play → Tournament
+```text
+Syntax error: expected an indented block (<unknown>, line 313)
+```
 
-**Closer:**
-> *"One text box. Any chess personality you can describe. Claude writes the brain, the Rust engine plays it, and Claude narrates every move in character. That's Chess Forge."*
+We fixed this by hardening the generator:
+
+- Full validation now runs on every Claude response.
+- Truncated responses are detected.
+- API timeouts are caught.
+- Malformed code never reaches the UI.
+- A prompt-aware local fallback eval is generated if Claude fails.
+
+This is the core of our AI usage story: Claude is powerful, but we evaluate and contain its output.
 
 ---
+
+## 6. Chess Engine Core
+
+The chess engine is written in Rust.
+
+Core engine features:
+
+- Legal move handling through `shakmaty`
+- Negamax search
+- Alpha-beta pruning
+- Iterative deepening
+- Quiescence search
+- Move ordering
+- Transposition table
+- Built-in fallback material evaluation
+
+Claude controls the personality through evaluation. Rust controls legality, search, and protocol behavior.
+
+This split keeps the project stable:
+
+- AI can generate style.
+- Rust guarantees the engine still plays legal chess.
+
 ---
 
-## Results
+## 7. Protocols and Foundations
+
+Chess Forge builds on existing chess-engine protocols and formats.
+
+### UCI: Universal Chess Interface
+
+The Rust engine speaks UCI, the standard protocol used by chess engines and GUIs.
+
+Example:
+
+```text
+uci
+id name ChessForge
+id author Chess Cubist
+uciok
+isready
+readyok
+position startpos moves e2e4 e7e5
+go movetime 500 depth 4
+bestmove g1f3
+```
+
+Why this matters:
+
+- The engine can be tested outside our frontend.
+- It can load into standard chess GUIs.
+- It demonstrates research into chess-engine prior art.
+
+### FEN: Board Serialization
+
+Rust sends board states to Python as FEN strings.
+
+FEN lets one line represent the whole board:
+
+```text
+rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+```
+
+### Rust-to-Python Eval Protocol
+
+Rust searches. Python evaluates.
+
+Protocol:
+
+```text
+Rust   -> Python: <FEN string>\n
+Python -> Rust:   <centipawn integer>\n
+Rust   -> Python: quit\n
+```
+
+On error:
+
+```text
+Python -> Rust: ERR <message>\n
+```
+
+Rust substitutes a safe fallback score and continues.
+
+### Centipawn Scores
+
+The generated eval returns centipawns:
+
+```text
+100 centipawns = roughly 1 pawn
++100 = White is about one pawn better
+-100 = Black is about one pawn better
+```
+
+The UI displays:
+
+```text
++135 cp -> +1.35
+```
+
+### Win Probability
+
+The backend converts centipawns into a White win probability:
+
+```python
+1 / (1 + 10 ** (-cp / 400))
+```
+
+So:
+
+- `0 cp` is about 50%
+- `+400 cp` is about 90%
+- `-400 cp` is about 10%
+
+---
+
+## 8. System Architecture
+
+```text
+User prompt
+   |
+   v
+Claude Haiku interpretation
+   |
+   v
+Claude Sonnet code generation
+   |
+   v
+Five-gate validator
+   |
+   v
+Saved Python evaluate(board) function
+   |
+   v
+Rust UCI engine search
+   |
+   v
+Python eval server over FEN stdin/stdout
+   |
+   v
+Best move + eval + principal variation
+   |
+   v
+FastAPI WebSocket
+   |
+   v
+React UI + commentary + tournament results
+```
+
+Technology stack:
+
+- Rust engine
+- Python eval pipeline
+- FastAPI backend
+- React + TypeScript frontend
+- WebSockets for live game updates
+- UCI for engine protocol
+- FEN for board serialization
+- python-chess for generated eval board queries
+- shakmaty for Rust-side chess representation
+
+---
+
+## 9. Testing and Rigor
+
+We tested the system at multiple levels.
+
+| Test Module | Purpose |
+|-------------|---------|
+| `test_perft.py` | Validates move generation against known node counts |
+| `test_eval.py` | Checks eval symmetry, material detection, and sane scores |
+| `test_generator.py` | Tests validation gates and fallback behavior |
+| `test_search.py` | Checks UCI/search behavior on tactical positions |
+| `test_tournament.py` | Checks bracket math, W/D/L accounting, and JSON output |
+
+Additional integration check:
+
+```bash
+make agent
+```
+
+This runs:
+
+1. build check
+2. eval check
+3. generator check
+4. UCI handshake check
+5. pipeline check with live games
+
+Recent testing:
+
+- Generator tests: `12 passed`
+- Tournament tests: `9 passed`
+- Exact prompt `"play like magnus carlsen"` generated valid code
+- Generated Magnus eval completed a tournament
+- Fallback styles completed a tournament
+
+---
+
+## 10. Results
 
 ![Quality Metrics Summary](quality_metrics_summary.png)
 
-> **Quality Metrics Summary** — a six-panel dashboard showing all metrics at once. Top row (left to right): Fingerprint σ (how opinionated each engine is), Cohen's d heatmap (how distinct each pair is), EGRI over prompt iterations. Bottom row: PPAR delta chart, CCS commentary alignment bars, tournament final standings. Each panel is a condensed version of the detailed charts below. Use this as the one-slide proof that personalities differ in measurably different ways.
+This is the one-slide proof that the personalities are measurable, not just vibes: prompt reliability, personality fingerprints, distinctiveness, philosophy-play alignment, commentary consistency, and tournament standings.
 
----
+### Prompt Reliability
 
-**Personalities are provably distinct:**
+![EGRI — Prompt Iteration History](quality_metrics_egri.png)
+
+**EGRI: Eval Generation Reliability Index**
+
+Grey bars track syntax pass rate. Green bars track all five validation gates. It is calculated as:
+
+```text
+functions passing all gates / total generation attempts
+```
+
+We started with generated-code failures:
+
+- invalid Python
+- unsafe imports
+- `random`
+- wrong sign conventions
+- bad use of `board.king()`
+- constant eval functions
+
+Each failure became a validation rule, prompt constraint, or fallback behavior.
+
+### Personality Distinctness
 
 ![Personality Fingerprints](quality_metrics_fingerprint.png)
 
-> **Personality Fingerprints** — four bar charts, one per engine, showing the centipawn score assigned to each of the 20 test positions (x-axis: position label, y-axis: centipawns from White's perspective). The horizontal line is the mean across all positions; the subtitle shows σ (standard deviation). A wide spread = the engine has strong opinions. A flat distribution = the personality is getting drowned out by material. Calculated by calling `evaluate(chess.Board(fen))` on each position and clipping to ±2000cp.
+Each personality is evaluated across a shared suite of positions. Wide score distributions mean the engine has strong opinions; flat distributions mean the personality is getting drowned out by material.
 
 ![Personality Distinctiveness Score](quality_metrics_pds.png)
 
-> **Personality Distinctiveness Score (PDS / Cohen's d)** — left panel: heatmap of all pairwise Cohen's d values; right panel: bar chart of the same values for each unique pair. Cohen's d = `|mean_A − mean_B| / pooled_std_dev` computed over each engine's 20-position fingerprint scores. Colour coding: red bars = large effect (d ≥ 0.8, genuinely different play), orange = medium (0.5–0.8), grey = small (< 0.5). The key test: Tal vs Petrosian should have the highest d — they are philosophically opposite.
+The distinctiveness score uses pairwise Cohen's d over the personality fingerprints. Large effects mean two engines evaluate the same positions in genuinely different ways.
 
 ![Philosophy-Play Alignment](quality_metrics_ppar.png)
 
-> **Philosophy-Play Alignment Rate (PPAR)** — grouped bar chart with three position categories on the x-axis (Attack, Structure, Defense) and one bar per engine. Each bar shows the average centipawn delta vs. the Classic baseline: `avg(personality_score − classic_score)` across positions in that category. Positive delta = the engine rates those positions more favourably than pure material counting would predict — the personality is showing up. Expected pattern: Tal positive on Attack, Karpov positive on Structure, Petrosian positive on Defense. Deviations from this pattern flag a personality that isn't translating philosophy into evaluation.
+**PPAR: Philosophy-Play Alignment Rate**
+
+PPAR compares each personality's score to the Classic baseline across attack, structure, and defense positions. Expected pattern:
+
+- Tal should like attack positions.
+- Karpov should like structure positions.
+- Petrosian should like defensive positions.
 
 ![Commentary Consistency Score](quality_metrics_ccs.png)
 
-> **Commentary Consistency Score (CCS)** — three panels, one per personality. Each panel shows three bars: the keyword hit rate against the aggressive, positional, and defensive lexicons. The green bar is the engine's own expected style. Calculated as `keyword_hits / total_words`, where a hit is any word containing a keyword stem (e.g. "attack", "sacrifice", "open" for aggressive). The correct style bar should be tallest — if it isn't, the commentary isn't personality-specific.
+CCS checks whether generated commentary uses language consistent with the personality: aggressive, positional, or defensive.
 
-**Tournament standings:**
+The point is not just that the code differs. The play differs.
+
+For example:
+
+- Tal-style evals reward attack and activity.
+- Karpov-style evals reward structure and pressure.
+- Petrosian-style evals reward king safety and defensive solidity.
+- A "Coward" personality performs poorly because it avoids useful activity.
+
+### Tournament Results
 
 ![Tournament](quality_metrics_tournament.png)
 
-> **Tournament Standings** — bar chart of final points (Win = 2, Draw = 1, Loss = 0) from a round-robin where every engine plays every other engine twice. Points = `W × 2 + D`. Loaded directly from `tournament/results/{session_id}.json`. The Coward engine (user-generated, over-penalizes aggression) scoring 0 is the intended result — it validates that personality differences are large enough to determine game outcomes, not just evaluation scores.
+Tournament play lets us evaluate generated personalities empirically. Points are:
+
+```text
+Win = 2, Draw = 1, Loss = 0
+```
+
+The "Coward" engine scoring 0 in one run is a useful result: it shows that an intentionally passive generated personality changes game outcomes, not only eval text.
+
+Recent generated Magnus tournament:
+
+```text
+Magnus:    2W / 0D / 1L
+Tal:       1W / 0D / 2L
+Karpov:    2W / 0D / 1L
+Petrosian: 1W / 0D / 2L
+```
 
 ---
 
-## Quick Reference — Key Numbers for Q&A
+## 11. How This Meets the Hackathon Criteria
+
+### Chess Engine Quality
+
+- Legal move generation
+- UCI engine
+- Alpha-beta search
+- Quiescence search
+- Move ordering
+- Transposition table
+- Self-play tournaments
+
+### AI Usage
+
+- Claude interprets user personalities.
+- Claude generates eval functions.
+- Claude narrates engine moves.
+- AI output is validated, tested, and hardened.
+- Failures are documented in `TESTING.md`.
+
+### Process and Parallelization
+
+The project naturally separated into parallel workstreams:
+
+- Rust engine
+- Python eval generator
+- Backend orchestration
+- Frontend UI
+- Tournament/testing layer
+- Documentation/presentation
+
+The Rust-Python interface contract allowed independent development:
+
+```text
+FEN in -> centipawn score out
+```
+
+### Engineering Quality
+
+- Unit tests
+- Perft tests
+- Tournament tests
+- UCI compatibility
+- Prompt iteration logs
+- JSON tournament results
+- README, TESTING, FEATURES, and presentation docs
+
+---
+
+## 12. Closing
+
+Chess Forge is not just another chess bot.
+
+It is a system for creating, validating, playing, and benchmarking chess personalities.
+
+The key idea:
+
+> The user describes an opponent, Claude writes the opponent's chess brain, Rust plays the legal chess, and the tournament proves whether the personality actually behaves differently.
+
+That is creativity, AI usage, experimentation, and engineering in one loop.
+
+---
+
+## Quick Reference for Q&A
 
 | Fact | Value |
 |------|-------|
-| Lines of code | ~2,000 (all Claude-written) |
-| Plan iterations | 4 (LLM-PLAN1 → PLAN4) |
+| Main idea | Natural-language chess engine personalities |
+| Engine language | Rust |
+| Eval language | Python |
+| Frontend | React + TypeScript |
+| Backend | FastAPI |
+| Engine protocol | UCI |
+| Board serialization | FEN |
+| Eval unit | Centipawns |
 | Validation gates | 5 |
-| Claude touchpoints per game | 3 (interpret, generate, narrate per move) |
-| Tournament opponents | Tal · Karpov · Petrosian |
-| Test modules | 5 (perft, eval, generator, search, tournament) |
-| Languages | Rust · Python · TypeScript |
-| Engine protocol | UCI (Universal Chess Interface) |
+| Built-in opponents | Tal, Karpov, Petrosian, Classic |
+| Main tests | perft, eval, generator, search, tournament |
+| AI touchpoints | interpret, generate, narrate |
+| Main reliability fix | Validate Claude output and fallback on malformed/truncated/timed-out code |
