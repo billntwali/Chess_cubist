@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-04-25T02:01:33.578937",
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "checks": [
+    {
+      "name": "pipeline_check",
+      "passed": true,
+      "details": "classic vs tal: draw  |  karpov vs classic: draw  |  tal vs petrosian: draw",
+      "duration_ms": 125451,
+      "games": [
+        {
+          "white": "classic",
+          "black": "tal",
+          "result": "draw"
+        },
+        {
+          "white": "karpov",
+          "black": "classic",
+          "result": "draw"
+        },
+        {
+          "white": "tal",
+          "black": "petrosian",
+          "result": "draw"
+        }
+      ]
+    }
+  ]
+}

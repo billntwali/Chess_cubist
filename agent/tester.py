@@ -20,6 +20,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 # Make repo root importable
 sys.path.insert(0, str(Path(__file__).parents[1]))
@@ -73,7 +74,7 @@ def main() -> None:
     to_run = {args.only: CHECKS[args.only]} if args.only else CHECKS
     total  = len(to_run)
     results: list[CheckResult] = []
-    generated_eval_path: str | None = None
+    generated_eval_path: Optional[str] = None
 
     print(f"\n{BOLD}Chess Forge Pipeline Tester{RESET}  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 

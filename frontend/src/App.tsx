@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import Board from "./components/Board";
-import CodeViewer from "./components/CodeViewer";
 import CommentaryFeed from "./components/CommentaryFeed";
 import EngineInfo from "./components/EngineInfo";
 import PhilosophyInput from "./components/PhilosophyInput";
@@ -10,7 +9,6 @@ import WinProbBar from "./components/WinProbBar";
 
 export default function App() {
   const [evalPath, setEvalPath] = useState("");
-  const [code, setCode] = useState("");
   const [philosophy, setPhilosophy] = useState("");
   const [gameId, setGameId] = useState<string | null>(null);
   const [fen, setFen] = useState("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -20,15 +18,21 @@ export default function App() {
   const [depth, setDepth] = useState(0);
   const [commentary, setCommentary] = useState<string[]>([]);
   const [viewerCount, setViewerCount] = useState(0);
-  const [tournamentStandings, setTournamentStandings] = useState([]);
+  const [tournamentStandings, setTournamentStandings] = useState<any[]>([]);
   const [tournamentRunning, setTournamentRunning] = useState(false);
+  const [thinking, setThinking] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
-  function handleEvalReady(path: string, evalCode: string, desc: string) {
+  function handleEvalReady(path: string, _code: string, desc: string) {
     setEvalPath(path);
-    setCode(evalCode);
     setPhilosophy(desc);
     setGameId(null);
+    setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    setCommentary([]);
+    setWhiteProb(0.5);
+    setEvalCp(0);
+    setPv("");
+    setDepth(0);
   }
 
   async function startGame() {
@@ -38,11 +42,7 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ eval_path: evalPath, philosophy }),
       });
-      if (!res.ok) {
-        const err = await res.text();
-        alert(`Failed to start game: ${err}`);
-        return;
-      }
+      if (!res.ok) { alert(`Failed to start game: ${await res.text()}`); return; }
       const { game_id } = await res.json();
       setGameId(game_id);
 
@@ -56,15 +56,17 @@ export default function App() {
         if (data.pv) setPv(data.pv);
         if (data.depth) setDepth(data.depth);
         if (data.commentary) setCommentary((c) => [...c, data.commentary]);
+        setThinking(false);
       };
       ws.onerror = () => alert("WebSocket connection failed — is the backend running?");
       wsRef.current = ws;
-    } catch (e) {
-      alert(`Could not reach backend — is it running on port 8000?`);
+    } catch {
+      alert("Could not reach backend — is it running on port 8000?");
     }
   }
 
   function handleMove(moveUci: string) {
+    setThinking(true);
     wsRef.current?.send(JSON.stringify({ move: moveUci }));
   }
 
@@ -78,11 +80,9 @@ export default function App() {
         body: JSON.stringify({ user_eval_path: evalPath, user_name: philosophy.slice(0, 20) }),
       });
       const data = await res.json();
-      const standings = Object.entries(data.standings).map(([name, record]: [string, any]) => ({
-        name,
-        ...record,
-      }));
-      setTournamentStandings(standings);
+      setTournamentStandings(
+        Object.entries(data.standings).map(([name, record]: [string, any]) => ({ name, ...record }))
+      );
     } finally {
       setTournamentRunning(false);
     }
@@ -90,26 +90,28 @@ export default function App() {
 
   return (
     <div className="app">
-      <header><h1>Chess Forge</h1></header>
+      <header>
+        <div className="header-logo">♟ Chess Forge</div>
+        {thinking && <div className="thinking-badge">Engine thinking…</div>}
+        {philosophy && <div className="philosophy-badge">"{philosophy.slice(0, 40)}{philosophy.length > 40 ? '…' : ''}"</div>}
+      </header>
 
       <div className="left-panel">
         <PhilosophyInput onEvalReady={handleEvalReady} />
         {evalPath && !gameId && (
-          <button onClick={startGame}>Play</button>
+          <button className="btn-primary" onClick={startGame}>▶ Play</button>
         )}
         {gameId && (
-          <button onClick={runTournament} disabled={tournamentRunning}>
-            {tournamentRunning ? "Running tournament… (1–2 min)" : "Run Tournament"}
+          <button className="btn-secondary" onClick={runTournament} disabled={tournamentRunning}>
+            {tournamentRunning ? "⏳ Running tournament…" : "⚔ Run Tournament"}
           </button>
         )}
-        <CodeViewer code={code} />
+        <TournamentResults standings={tournamentStandings} />
       </div>
 
       <div className="center-panel">
         <WinProbBar whiteProb={whiteProb} />
         <Board
-          evalPath={evalPath}
-          philosophy={philosophy}
           gameId={gameId}
           onMove={handleMove}
           fen={fen}
@@ -121,7 +123,6 @@ export default function App() {
 
       <div className="right-panel">
         <CommentaryFeed lines={commentary} />
-        <TournamentResults standings={tournamentStandings} />
       </div>
     </div>
   );

@@ -1,11 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 :root {
-  --bg: #1a1a2e;
-  --surface: #16213e;
-  --surface2: #0f3460;
-  --accent: #e94560;
-  --text: #eaeaea;
-  --text-muted: #888;
-  --border: #2a2a4a;
+  --bg: #0c0c14;
+  --surface: #13131f;
+  --surface2: #1c1c2e;
+  --surface3: #252538;
+  --accent: #7c5cfc;
+  --accent-dim: #4a3899;
+  --accent-glow: rgba(124, 92, 252, 0.2);
+  --green: #00c896;
+  --red: #ff4d6d;
+  --text: #eeeef8;
+  --text-muted: #6b6b8a;
+  --text-dim: #9999bb;
+  --border: #1e1e32;
+  --border-bright: #2e2e4a;
+  --radius: 10px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -13,16 +23,17 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 14px;
   height: 100vh;
   overflow: hidden;
 }
 
+/* ── Layout ── */
 .app {
   display: grid;
-  grid-template-columns: 300px 1fr 300px;
-  grid-template-rows: 48px 1fr;
+  grid-template-columns: 300px 1fr 280px;
+  grid-template-rows: 52px 1fr;
   height: 100vh;
 }
 
@@ -30,18 +41,46 @@ header {
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
+  gap: 16px;
   padding: 0 24px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  gap: 16px;
 }
 
-header h1 {
+.header-logo {
   font-size: 18px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   color: var(--accent);
-  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.thinking-badge {
+  padding: 4px 12px;
+  background: var(--accent-glow);
+  border: 1px solid var(--accent-dim);
+  border-radius: 99px;
+  font-size: 12px;
+  color: var(--accent);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.philosophy-badge {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-left: auto;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .left-panel,
@@ -49,20 +88,22 @@ header h1 {
 .right-panel {
   padding: 16px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-bright) transparent;
 }
 
 .left-panel {
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .right-panel {
   border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .center-panel {
@@ -74,62 +115,119 @@ header h1 {
 }
 
 /* ── Buttons ── */
-button {
-  padding: 8px 16px;
+.btn-primary {
+  width: 100%;
+  padding: 11px 20px;
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.3px;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  width: 100%;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 600;
-  transition: opacity 0.15s;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all 0.15s ease;
 }
-button:disabled { opacity: 0.4; cursor: not-allowed; }
-button:hover:not(:disabled) { opacity: 0.85; }
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Philosophy Input ── */
-.philosophy-input {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.philosophy-input { display: flex; flex-direction: column; gap: 8px; }
+
+.philosophy-input label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
 }
 
 .philosophy-input textarea {
   width: 100%;
-  padding: 8px 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius);
   color: var(--text);
   resize: vertical;
   font-family: inherit;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.6;
+  transition: border-color 0.15s;
+  min-height: 80px;
 }
 
 .philosophy-input textarea:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--accent-dim);
+  background: var(--surface3);
 }
 
+.philosophy-input button {
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--surface3);
+  color: var(--text);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.philosophy-input button:hover:not(:disabled) {
+  background: var(--accent-glow);
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+
+.philosophy-input button:disabled { opacity: 0.45; cursor: not-allowed; }
+
 .interpreted {
-  padding: 8px 10px;
-  background: var(--surface);
+  padding: 10px 12px;
+  background: var(--surface2);
   border-left: 3px solid var(--accent);
-  border-radius: 2px;
+  border-radius: 0 var(--radius) var(--radius) 0;
   font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.5;
+  color: var(--text-dim);
+  line-height: 1.6;
 }
 
 .error {
-  padding: 8px 10px;
-  background: rgba(233, 69, 96, 0.15);
-  border: 1px solid var(--accent);
-  border-radius: 4px;
+  padding: 10px 12px;
+  background: rgba(255, 77, 109, 0.1);
+  border: 1px solid rgba(255, 77, 109, 0.4);
+  border-radius: var(--radius);
   font-size: 12px;
-  color: #ff8a9b;
+  color: #ff8099;
+  line-height: 1.5;
 }
 
 .history { margin-top: 4px; }
@@ -137,6 +235,7 @@ button:hover:not(:disabled) { opacity: 0.85; }
 .history strong {
   display: block;
   font-size: 10px;
+  font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -144,94 +243,75 @@ button:hover:not(:disabled) { opacity: 0.85; }
 }
 
 .history-entry {
-  padding: 6px 8px;
+  padding: 7px 10px;
   margin-bottom: 4px;
-  background: var(--surface);
-  border-radius: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
+  color: var(--text-dim);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  border: 1px solid transparent;
-  transition: border-color 0.15s;
+  transition: all 0.15s;
 }
 
 .history-entry:hover {
-  border-color: var(--accent);
-}
-
-/* ── Code Viewer ── */
-.code-viewer { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-
-.code-viewer-header {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
-
-.code-viewer-body {
-  flex: 1;
-  background: #0d1117;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 10px;
-  overflow: auto;
-  font-size: 11px;
-  line-height: 1.6;
-  font-family: 'Fira Code', 'Cascadia Code', monospace;
-  color: #cdd9e5;
-  white-space: pre;
+  border-color: var(--accent-dim);
+  color: var(--text);
+  background: var(--surface3);
 }
 
 /* ── Win Probability Bar ── */
 .win-prob-bar {
   display: flex;
   width: 100%;
-  height: 22px;
-  border-radius: 3px;
+  height: 20px;
+  border-radius: 6px;
   overflow: hidden;
   font-size: 11px;
   font-weight: 700;
+  background: var(--surface2);
 }
 
 .win-prob-white {
-  background: #f0ede8;
+  background: linear-gradient(90deg, #f5f0ff, #e8e0ff);
   color: #1a1a2e;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: width 0.5s ease;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 0;
 }
 
 .win-prob-black {
-  background: #2a2a2a;
-  color: #eaeaea;
+  background: linear-gradient(90deg, #1a1525, #0f0c1a);
+  color: #9090b0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: width 0.5s ease;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 0;
 }
 
 /* ── Board ── */
 .board-wrapper {
-  width: min(480px, 100%);
+  width: min(520px, 100%);
 }
 
 /* ── Engine Info ── */
 .engine-info {
   width: 100%;
   display: flex;
-  gap: 20px;
+  gap: 16px;
   font-size: 11px;
   color: var(--text-muted);
-  font-family: 'Fira Code', monospace;
-  padding: 2px 0;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  padding: 4px 2px;
 }
+
+.engine-eval { color: var(--accent); }
 
 /* ── Spectator Room ── */
 .spectator-room {
@@ -241,12 +321,38 @@ button:hover:not(:disabled) { opacity: 0.85; }
   width: 100%;
 }
 
-.viewer-count {
+.spectator-room button {
+  padding: 7px 14px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-bright);
+  border-radius: 6px;
+  cursor: pointer;
   font-size: 12px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.spectator-room button:hover {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
+
+.viewer-count {
+  font-size: 11px;
   color: var(--text-muted);
 }
 
 /* ── Commentary Feed ── */
+.commentary-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
 .commentary-feed {
   flex: 1;
   overflow-y: auto;
@@ -257,14 +363,20 @@ button:hover:not(:disabled) { opacity: 0.85; }
 }
 
 .commentary-line {
-  padding: 8px 12px;
-  background: var(--surface);
-  border-radius: 4px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--accent);
   line-height: 1.6;
   font-style: italic;
-  color: var(--text);
+  color: var(--text-dim);
   font-size: 13px;
-  border-left: 2px solid var(--accent);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Tournament Results ── */
@@ -272,6 +384,7 @@ button:hover:not(:disabled) { opacity: 0.85; }
 
 .tournament-results h3 {
   font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--text-muted);
@@ -286,7 +399,7 @@ button:hover:not(:disabled) { opacity: 0.85; }
 }
 
 .result-name {
-  width: 72px;
+  width: 80px;
   font-size: 12px;
   font-weight: 600;
   flex-shrink: 0;
@@ -296,12 +409,13 @@ button:hover:not(:disabled) { opacity: 0.85; }
 }
 
 .result-bar {
-  height: 14px;
-  background: var(--accent);
-  border-radius: 2px;
-  transition: width 0.6s ease;
+  height: 12px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-dim));
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 3px;
   max-width: 120px;
+  box-shadow: 0 0 8px var(--accent-glow);
 }
 
 .result-record {
