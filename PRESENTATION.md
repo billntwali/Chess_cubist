@@ -1,11 +1,9 @@
 # Chess Forge — Presentation Script
-**5 minutes total · ~1.5 min demo · 5 speakers**
+**5 minutes · ~1.5 min demo · 5 speakers**
 
 ---
 
-## Person 1 — The Problem & The Idea (~1 min)
-
-**Why we built this**
+## The Problem & The Idea
 
 Chess.com has personality bots — Magnus, Hikaru, preset styles. You pick one and play. That's it. You can't invent your opponent. You can't see how it thinks. The AI is a skin on top.
 
@@ -21,14 +19,14 @@ That's Chess Forge.
 
 ---
 
-## Person 2 — How We Used Claude to Plan & Build (~1 min)
+## How We Used Claude to Plan & Build
 
 **Claude wasn't just a tool — it was a team member**
 
 ![How we used Claude](how_we_used_claude.png)
 
 **Planning:**
-- We fed the hackathon rubric into a `CLAUDE.md` file — Claude read the judging criteria first
+- Fed the hackathon rubric into a `CLAUDE.md` file — Claude read the judging criteria first
 - Iterated through four plan files (`LLM-PLAN1` → `PLAN4`), getting pushback, refinements, and discarded ideas each round
 - Submitted all team plans; Claude compared them and picked the strongest one
 - Claude wrote a five-person implementation plan — each of us selected a role, and Plan Mode generated our individual specs
@@ -36,51 +34,39 @@ That's Chess Forge.
 **Building:**
 - Every team member had their own Claude agent focused on their layer — Rust engine, eval generator, backend, frontend, tester
 - Claude wrote essentially all the code
-- The Rust-Python interface contract was designed in conversation with Claude and committed as a spec *before* either side was built — so both streams could build in parallel without stepping on each other
+- The Rust-Python interface contract was designed in conversation with Claude and committed as a spec *before* either side was built — both streams built in parallel without stepping on each other
 
 ---
 
-## Person 3 — How Claude Works Inside the Engine (~1 min)
+## How Claude Works Inside the Engine
 
 **Every time you type a philosophy, this pipeline runs:**
 
-1. **Interpret (Claude Haiku)** — Maps your description to a chess-expressible concept. "Paranoid coward" becomes: *"Maximizes king safety and pawn structure integrity, penalizes open files near own king, avoids piece trades at all costs."* Impossible inputs like "only move pawns" get redirected gracefully.
+1. **Interpret (Claude Haiku)** — Maps your description to a chess-expressible concept. "Paranoid coward" becomes: *"Maximizes king safety, penalizes open files near own king, avoids all trades."* Impossible inputs like "only move pawns" get redirected gracefully.
 
-2. **Generate (Claude Sonnet)** — Writes a Python `evaluate(board) -> int` function from scratch, live. The code appears on screen as it generates. This function is what decides how the engine values every position.
+2. **Generate (Claude Sonnet)** — Writes a Python `evaluate(board) -> int` function from scratch, live. The code appears on screen as it generates. This function decides how the engine values every position.
 
-3. **5-gate validation** — Before the engine ever touches a game, the code passes: syntax check, safety check (no `os`, `subprocess`, `exec`), sanity check on canonical positions, determinism check, variance check across 10 diverse positions. Any failure surfaces the exact error and prompts a rephrase.
+3. **5-gate validation** — Before the engine touches a game: syntax, safety, sanity on canonical positions, determinism, variance. Any failure surfaces the exact error and prompts a rephrase.
 
-4. **Rust calls Python at every node** — The Rust search engine evaluates hundreds of positions per move. For each leaf node, it sends a FEN string to the Python eval server over stdin/stdout and gets back a centipawn score. The personality runs at the heart of every search.
+4. **Rust calls Python at every node** — For each leaf node in the search tree, Rust sends a FEN to the Python eval server and gets back a centipawn score. The personality runs at the heart of every search.
 
 5. **Narrate (Claude Haiku)** — After every engine move, Claude writes one sentence in the personality's voice: *"The Coward tucks the bishop back, unwilling to risk a single exchange."*
 
 ---
 
-## Person 4 — The Engineering (~45 sec)
+## The Engineering
 
-**Built to be real, not just a demo**
-
-- **Rust engine** — alpha-beta search, iterative deepening, quiescence search, transposition table, MVV-LVA move ordering. UCI compliant — loads into any chess GUI in the world
-- **Persistent eval bridge** — Rust spawns one Python process per game. FEN in, centipawn score out. Clean interface, no recompiling for new personalities
-- **Test suite** — perft tests validate move generation against known node counts at depth 1–4 (including Kiwipete), mate-in-N tests, eval sanity tests, 5-gate generator tests
-- **Pipeline tester** — `make agent` runs 5 automated checks end-to-end in ~3 minutes: build, eval server, generator, UCI handshake, 3 live games
-- **Tournament** — round-robin harness saves W/D/L to JSON, renders as a bar chart in the UI
-- **Prompt iteration logged** — every prompt we used is in `prompts/` with iteration notes, so the AI usage story is documented, not just claimed
+- **Rust engine** — alpha-beta, iterative deepening, quiescence search, transposition table, MVV-LVA. UCI compliant — loads into any chess GUI in the world
+- **Persistent eval bridge** — Rust spawns one Python process per game. FEN in, centipawn score out. No recompiling for new personalities
+- **Test suite** — perft tests at depth 1–4 (including Kiwipete), mate-in-N, eval sanity, 5-gate generator tests
+- **Pipeline tester** — `make agent` runs 5 automated checks end-to-end: build, eval server, generator, UCI handshake, 3 live games
+- **Prompt iteration logged** — every prompt is in `prompts/` with iteration notes. The AI usage story is documented, not just claimed
 
 ---
 
-## Person 5 — The Demo (~1.5 min)
+## Demo
 
-**[Live demo — walk through this exactly]**
-
-1. Open the app (`make dev`)
-2. Type: **"a bloodthirsty attacker that sacrifices pawns to open files"**
-3. Click **Generate** — show the interpreted description appearing, then the Python code generating live in the sidebar
-4. Click **Play** — make 2-3 moves, show:
-   - The engine responding with aggressive moves
-   - The win probability bar shifting
-   - Commentary appearing: *"The Gambler lunges the knight forward, ignoring the pawn it left hanging — the king is the only prize worth chasing."*
-5. Click **Run Tournament** — show the bar chart populating with results vs. Tal, Karpov, Petrosian
+`make dev` → type a philosophy → Generate → Play → Tournament
 
 **Closer:**
 > *"One text box. Any chess personality you can describe. Claude writes the brain, the Rust engine plays it, and Claude narrates every move in character. That's Chess Forge."*
