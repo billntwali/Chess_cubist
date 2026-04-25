@@ -16,6 +16,9 @@
     <marker id="ab" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
       <polygon points="0 0,10 3.5,0 7" fill="#5090e0" opacity="0.85"/>
     </marker>
+    <marker id="apur" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,10 3.5,0 7" fill="#c07aee" opacity="0.85"/>
+    </marker>
   </defs>
 
   <!-- Paper background -->
@@ -124,7 +127,7 @@
   <text x="798" y="160" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">chess concepts</text>
 
   <!-- Arrow R1→R2 -->
-  <path d="M 798 182 C 795 194 800 200 798 212" stroke="#c07aee" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#ab)" filter="url(#roughen)"/>
+  <path d="M 798 182 C 795 194 800 200 798 212" stroke="#c07aee" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#apur)" filter="url(#roughen)"/>
 
   <!-- R2 -->
   <rect x="682" y="214" width="232" height="80" rx="6" fill="#1a0d2e" stroke="#c07aee" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(-0.3,798,254)"/>
@@ -133,7 +136,7 @@
   <text x="798" y="274" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">live, from scratch</text>
 
   <!-- Arrow R2→R3 -->
-  <path d="M 798 296 C 795 308 800 314 798 326" stroke="#c07aee" stroke-width="2" fill="none" opacity="0.6" marker-end="url(#ab)" filter="url(#roughen)"/>
+  <path d="M 798 296 C 795 308 800 314 798 326" stroke="#c07aee" stroke-width="2" fill="none" opacity="0.6" marker-end="url(#apur)" filter="url(#roughen)"/>
 
   <!-- R3 — validation, slightly muted -->
   <rect x="682" y="328" width="232" height="72" rx="6" fill="#131828" stroke="#5090e0" stroke-width="1.5" opacity="0.9" filter="url(#softshadow)" transform="rotate(0.2,798,364)"/>
@@ -142,16 +145,16 @@
   <text x="798" y="386" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#6080b0">determinism · variance</text>
 
   <!-- Arrow R3→R4 -->
-  <path d="M 798 402 C 795 414 800 420 798 432" stroke="#c07aee" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#ab)" filter="url(#roughen)"/>
+  <path d="M 798 402 C 795 414 800 420 798 432" stroke="#c07aee" stroke-width="2" fill="none" opacity="0.7" marker-end="url(#apur)" filter="url(#roughen)"/>
 
   <!-- R4 -->
   <rect x="682" y="434" width="232" height="80" rx="6" fill="#1a0d2e" stroke="#c07aee" stroke-width="1.8" opacity="0.95" filter="url(#softshadow)" transform="rotate(-0.3,798,474)"/>
   <text x="798" y="458" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#e0a0ff" font-weight="bold">③ Narrate</text>
-  <text x="798" y="477" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">After every move, Claude</text>
-  <text x="798" y="494" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">narrates in the personality's voice</text>
+  <text x="798" y="474" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">After every move, Claude narrates</text>
+  <text x="798" y="491" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#b080d0">in the personality's voice</text>
 
   <!-- Column connector arrows -->
-  <path d="M 274 300 C 295 296 310 302 330 300" stroke="#888" stroke-width="1.2" fill="none" opacity="0.35" stroke-dasharray="5 3" marker-end="url(#ap)"/>
-  <path d="M 602 300 C 622 296 638 302 658 300" stroke="#888" stroke-width="1.2" fill="none" opacity="0.35" stroke-dasharray="5 3" marker-end="url(#ab)"/>
+  <path d="M 274 300 C 300 296 330 302 360 300" stroke="#50c888" stroke-width="1.2" fill="none" opacity="0.4" stroke-dasharray="5 3" marker-end="url(#ag)"/>
+  <path d="M 600 300 C 626 296 656 302 680 300" stroke="#c07aee" stroke-width="1.2" fill="none" opacity="0.4" stroke-dasharray="5 3" marker-end="url(#apur)"/>
 
 </svg>
