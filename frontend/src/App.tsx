@@ -32,25 +32,36 @@ export default function App() {
   }
 
   async function startGame() {
-    const res = await fetch("/api/game/start", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eval_path: evalPath, philosophy }),
-    });
-    const { game_id } = await res.json();
-    setGameId(game_id);
+    try {
+      const res = await fetch("/api/game/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eval_path: evalPath, philosophy }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        alert(`Failed to start game: ${err}`);
+        return;
+      }
+      const { game_id } = await res.json();
+      setGameId(game_id);
 
-    const ws = new WebSocket(`ws://${window.location.host}/ws/game/${game_id}`);
-    ws.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      if (data.fen) setFen(data.fen);
-      if (data.eval_cp !== undefined) setEvalCp(data.eval_cp);
-      if (data.white_prob !== undefined) setWhiteProb(data.white_prob);
-      if (data.pv) setPv(data.pv);
-      if (data.depth) setDepth(data.depth);
-      if (data.commentary) setCommentary((c) => [...c, data.commentary]);
-    };
-    wsRef.current = ws;
+      const ws = new WebSocket(`ws://${window.location.host}/ws/game/${game_id}`);
+      ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        if (data.error) { alert(`Engine error: ${data.error}`); return; }
+        if (data.fen) setFen(data.fen);
+        if (data.eval_cp !== undefined) setEvalCp(data.eval_cp);
+        if (data.white_prob !== undefined) setWhiteProb(data.white_prob);
+        if (data.pv) setPv(data.pv);
+        if (data.depth) setDepth(data.depth);
+        if (data.commentary) setCommentary((c) => [...c, data.commentary]);
+      };
+      ws.onerror = () => alert("WebSocket connection failed — is the backend running?");
+      wsRef.current = ws;
+    } catch (e) {
+      alert(`Could not reach backend — is it running on port 8000?`);
+    }
   }
 
   function handleMove(moveUci: string) {
