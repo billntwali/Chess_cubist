@@ -4,7 +4,22 @@ import json
 import subprocess
 import uuid
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
+
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+router = APIRouter()
+
+
+class TournamentRequest(BaseModel):
+    engines: dict[str, str]  # {name: eval_file_path}
+    games_per_pair: int = 10
+
+
+@router.post("/tournament")
+async def run_tournament_endpoint(request: TournamentRequest) -> dict:
+    return await asyncio.to_thread(run_tournament, request.engines, request.games_per_pair)
 
 RESULTS_DIR = Path(__file__).parents[1] / "tournament" / "results"
 RUST_BINARY = Path(__file__).parents[1] / "core" / "target" / "release" / "chess_forge"
@@ -118,7 +133,7 @@ def run_tournament(engine_paths: dict[str, str], games_per_pair: int = 10) -> di
     session_id = uuid.uuid4().hex[:8]
     output = {
         "session_id": session_id,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "standings": standings,
         "matchups": matchups,
     }

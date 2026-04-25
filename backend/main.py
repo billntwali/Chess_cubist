@@ -18,4 +18,7 @@ def health():
 
 
 # Routes are registered in their respective modules; import to trigger registration.
-from backend import game_manager, spectator_hub, tournament_runner  # noqa: E402, F401
+from backend import game_manager, spectator_hub  # noqa: E402, F401
+from backend.tournament_runner import router as tournament_router  # noqa: E402
+
+app.include_router(tournament_router)
