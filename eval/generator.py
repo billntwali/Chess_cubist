@@ -48,7 +48,7 @@ Material: pawn=100, knight=320, bishop=330, rook=500, queen=900"""
 def interpret(description: str) -> str:
     """Step 1: map user description to a chess-expressible concept."""
     response = _client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-2.0-flash-lite",
         contents=INTERPRET_PROMPT.format(description=description),
     )
     return response.text.strip()
@@ -57,7 +57,7 @@ def interpret(description: str) -> str:
 def generate(interpreted: str) -> str:
     """Step 2: generate a Python evaluate() function from the interpreted description."""
     response = _client.models.generate_content(
-        model="gemini-1.5-flash",
+        model="gemini-2.0-flash-lite",
         contents=CODEGEN_PROMPT.format(interpreted=interpreted),
     )
     return response.text.strip()

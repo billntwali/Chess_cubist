@@ -33,7 +33,7 @@ async def get_commentary(philosophy: str, move_uci: str, fen: str, eval_cp: int)
 
     def _call():
         response = _client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash-lite",
             contents=prompt,
         )
         return response.text.strip()
