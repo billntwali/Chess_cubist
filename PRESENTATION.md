@@ -13,7 +13,8 @@ Chess Forge asks a different question:
 Examples:
 
 ```text
-play like magnus carlsen
+play like cubist quant developer
+play like president obama
 play like a reckless attacker
 only move pawns if possible
 play like a coward who avoids all trades
@@ -68,7 +69,7 @@ Then:
 1. Type a personality:
 
 ```text
-play like magnus carlsen
+play like a cubist quant developer
 ```
 
 2. Claude interprets it as a chess strategy.
