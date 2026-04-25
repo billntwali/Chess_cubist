@@ -390,13 +390,13 @@ Recent testing:
 
 ## 10. Results
 
-
+![Quality Metrics Summary](assets/presentation/quality_metrics_summary.png)
 
 Through these metrics we prove the personalities are measurable: prompt reliability, personality fingerprints, commentary consistency, and tournament standings.
 
 ### Prompt Reliability
 
-![EGRI — Prompt Iteration History](quality_metrics_egri.png)
+![EGRI — Prompt Iteration History](assets/presentation/quality_metrics_egri.png)
 
 **EGRI: Eval Generation Reliability Index**
 
@@ -419,12 +419,25 @@ Each failure became a validation rule, prompt constraint, or fallback behavior.
 
 ### Personality Distinctness
 
-![Personality Fingerprints](quality_metrics_fingerprint.png)
+![Personality Fingerprints](assets/presentation/quality_metrics_fingerprint.png)
 
 Each personality is evaluated across a shared suite of positions. Wide score distributions mean the engine has strong opinions; flat distributions mean the personality is getting drowned out by material.
 
+![Personality Distinctiveness Score](assets/presentation/quality_metrics_pds.png)
 
-![Commentary Consistency Score](quality_metrics_ccs.png)
+The distinctiveness score uses pairwise Cohen's d over the personality fingerprints. Large effects mean two engines evaluate the same positions in genuinely different ways.
+
+![Philosophy-Play Alignment](assets/presentation/quality_metrics_ppar.png)
+
+**PPAR: Philosophy-Play Alignment Rate**
+
+PPAR compares each personality's score to the Classic baseline across attack, structure, and defense positions. Expected pattern:
+
+- Tal should like attack positions.
+- Karpov should like structure positions.
+- Petrosian should like defensive positions.
+
+![Commentary Consistency Score](assets/presentation/quality_metrics_ccs.png)
 
 CCS checks whether generated commentary uses language consistent with the personality: aggressive, positional, or defensive.
 
@@ -439,7 +452,7 @@ For example:
 
 ### Tournament Results
 
-![Tournament](quality_metrics_tournament.png)
+![Tournament](assets/presentation/quality_metrics_tournament.png)
 
 Tournament play lets us evaluate generated personalities empirically. Points are:
 
@@ -478,7 +491,7 @@ Petrosian: 1W / 0D / 2L
 - Claude generates eval functions.
 - Claude narrates engine moves.
 - AI output is validated, tested, and hardened.
-- Failures are documented in `TESTING.md`.
+- Failures are documented in `docs/TESTING.md`.
 
 ### Process and Parallelization
 
@@ -505,7 +518,7 @@ FEN in -> centipawn score out
 - UCI compatibility
 - Prompt iteration logs
 - JSON tournament results
-- README, TESTING, FEATURES, and presentation docs
+- README, `docs/TESTING.md`, `docs/FEATURES.md`, and presentation docs
 
 ---
 

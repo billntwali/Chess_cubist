@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-generate.py — Phase 2 of the Nano Banana Pro pipeline
+generate_blueprint.py — Phase 2 of the Nano Banana Pro pipeline
 
 1. Parses <!-- IMAGE: description --> placeholders from blueprint.svg
 2. Searches Tavily for each placeholder to find reference images
@@ -12,8 +12,8 @@ generate.py — Phase 2 of the Nano Banana Pro pipeline
 Usage:
     export GEMINI_API_KEY=...
     export TAVILY_API_KEY=...       # optional — skipped gracefully if not set
-    python generate.py
-    python generate.py --svg path/to/other.svg
+    python tools/generate_blueprint.py
+    python tools/generate_blueprint.py --svg path/to/other.svg
 """
 import argparse
 import base64
@@ -27,10 +27,10 @@ import requests
 from google import genai
 from google.genai import types
 
-REPO = Path(__file__).parent
-SVG_PATH = REPO / "blueprint.svg"
+REPO = Path(__file__).resolve().parents[1]
+SVG_PATH = REPO / "assets" / "presentation" / "blueprint.svg"
 IMAGES_DIR = REPO / "agent" / "results" / "images"
-OUTPUT_PNG = REPO / "blueprint_handdrawn.png"
+OUTPUT_PNG = REPO / "assets" / "presentation" / "blueprint_handdrawn.png"
 
 HAND_DRAWN_STYLE_PROMPT = """\
 Convert this diagram into a hand-drawn, whiteboard-style illustration:
