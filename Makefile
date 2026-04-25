@@ -1,4 +1,4 @@
-.PHONY: setup build test tournament bench dev
+.PHONY: setup build test agent tournament bench dev
 
 setup:
 	pip install -r requirements.txt
@@ -9,6 +9,9 @@ build:
 
 test:
 	pytest tests/ -v
+
+agent:
+	python3 agent/tester.py
 
 tournament:
 	python -c "\
