@@ -28,19 +28,15 @@ DISALLOWED_SHADOW_NAMES = {
 }
 
 INTERPRET_PROMPT = """\
-The user wants a chess engine with this philosophy: "{description}"
+The user wants a chess engine with this personality: "{description}"
 
-Restate this as a concrete chess POSITION evaluation strategy in one sentence —
-something expressible as: "score this board state highly when [X]."
+Describe how this player approaches chess in 1-2 vivid sentences. Write it as a character portrait —
+what does this player obsess over, fear, ignore, or crave on the board?
 
-Use only chess concepts: piece activity, king safety, pawn structure, material
-balance, mobility, open files, outposts, etc.
+Ground it in real chess concepts (piece activity, king safety, pawn structure, open files, outposts, material),
+but let the personality come through. Be specific and colorful, not clinical.
 
-If the input describes a move rule (e.g. "only move pawns"): redirect to the
-closest positional philosophy and prefix with:
-"Note: your input was a move rule — here's the closest positional equivalent:"
-
-Return ONLY the one-sentence restatement."""
+Return ONLY the 1-2 sentence description."""
 
 CODEGEN_PROMPT = """\
 You are a chess engine programmer. Write a Python function:
@@ -54,6 +50,8 @@ Philosophy: {interpreted}
 Hard rules:
 - Python 3.9 compatible syntax only (no match statements, no X | Y union types)
 - Import only: chess, math
+- Do NOT call board.push() or board.pop() — treat the board as read-only
+- Do NOT use chess.Move.null() or any null move tricks
 - No random, time, network, file I/O, or side effects
 - Do not shadow Python built-ins (e.g., never assign to int, list, dict, sum, max)
 - Must not raise exceptions on any legal board state
@@ -61,13 +59,43 @@ Hard rules:
 - Return an integer
 - Return ONLY the function, no explanation
 
-Material: pawn=100, knight=320, bishop=330, rook=500, queen=900"""
+Useful read-only board methods:
+  board.pieces(piece_type, color)  -> SquareSet (iterable of square ints)
+  board.piece_at(square)           -> Piece or None
+  board.king(color)                -> int (a single square number, NOT iterable — never loop over it)
+  board.is_check()                 -> bool
+  board.turn                       -> chess.WHITE or chess.BLACK
+  chess.square_file(sq), chess.square_rank(sq)  -> int 0-7
+  len(list(board.legal_moves))     -> mobility count (call once per side via board.turn)
+
+Common mistakes to avoid:
+  BAD:  for sq in board.king(chess.WHITE)   # king() returns an int, not iterable
+  GOOD: king_sq = board.king(chess.WHITE); if king_sq is not None: ...
+  BAD:  score += board.pieces(...)          # SquareSet can't be added to int
+  GOOD: score += len(board.pieces(...))
+
+Material: pawn=100, knight=320, bishop=330, rook=500, queen=900, king=0
+IMPORTANT: Never use board.piece_map() — it includes kings and will cause KeyError.
+Instead use board.pieces(piece_type, color) for each piece type explicitly.
+
+Bonus sizing — this is critical for the personality to actually show up in play:
+- Personality bonuses must be LARGE enough to compete with material (50–150cp per feature)
+- If the philosophy prizes aggression, king-attack bonuses should reach 100–200cp total
+- If the philosophy ignores safety, penalize own king safety by -100 to -200cp
+- Weak bonuses (5–20cp) get drowned out by material and the personality disappears
+- Do NOT be conservative — the whole point is that this engine plays differently"""
 
 RETRY_PROMPT = """\
 The function you wrote has this error: {error}
 
-Rewrite the evaluate() function fixing the error. Follow all original rules,
-and use only Python 3.9 compatible syntax. Return ONLY the function."""
+Rewrite the evaluate() function fixing the error. Key constraints:
+- Do NOT call board.push() or board.pop()
+- Do NOT use board.piece_map() — it includes kings and causes KeyError: 6
+- Do NOT iterate over board.king() — it returns an int, not iterable
+- Do NOT add SquareSets to ints — use len(board.pieces(...)) instead
+- Use board.pieces(piece_type, color) for each piece type explicitly
+- Use only Python 3.9 syntax
+- Return ONLY the function."""
 
 
 def interpret(description: str) -> str:
@@ -103,17 +131,43 @@ def generate(interpreted: str, max_retries: int = 2) -> str:
         raw = msg.choices[0].message.content
         code = _strip_markdown(raw)
 
-        # Early syntax check — retry immediately rather than surfacing to UI
-        try:
-            ast.parse(code)
-            return code  # Syntax is fine; full validation happens in validate()
-        except SyntaxError as e:
-            if attempt == max_retries:
-                return code  # Return anyway; validate() will report the error
-            messages.append({"role": "assistant", "content": raw})
-            messages.append({"role": "user", "content": RETRY_PROMPT.format(error=str(e))})
+        # Early syntax + sanity check — retry with the error rather than surfacing to UI
+        error = _quick_check(code)
+        if error is None:
+            return code  # Passes quick checks; full validation happens in validate()
+        if attempt == max_retries:
+            return code  # Last attempt — let validate() report the full error
+        messages.append({"role": "assistant", "content": raw})
+        messages.append({"role": "user", "content": RETRY_PROMPT.format(error=error)})
 
     return code
+
+
+def _quick_check(code: str):
+    """Return an error string if the code has a syntax error or crashes on the start position,
+    otherwise return None."""
+    try:
+        ast.parse(code)
+    except SyntaxError as e:
+        return f"SyntaxError: {e}"
+
+    namespace: dict = {"chess": chess, "math": math}
+    try:
+        exec(code, namespace)
+    except Exception as e:
+        return f"Execution error: {e}"
+
+    fn = namespace.get("evaluate")
+    if fn is None:
+        return "No 'evaluate' function defined"
+
+    try:
+        result = fn(chess.Board())
+        int(result)
+    except Exception as e:
+        return f"Crashed on starting position: {e}"
+
+    return None
 
 
 def validate(code: str) -> tuple[bool, str]:
@@ -153,7 +207,7 @@ def validate(code: str) -> tuple[bool, str]:
 
     # Gate 3: Sanity — canonical positions
     sanity_cases = [
-        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", -50, 50),    # start ≈ 0
+        ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", -300, 300),   # start ≈ 0
         ("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 200, None),  # black missing queen → white winning
         ("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1", None, -200), # white missing queen → black winning
     ]

@@ -4,6 +4,7 @@ import chess
 import subprocess
 import uuid
 from pathlib import Path
+from typing import Optional
 
 from fastapi import WebSocket, WebSocketDisconnect
 
@@ -25,7 +26,7 @@ class GameState:
         self.game_id = game_id
         self.eval_path = eval_path
         self.player_ws = player_ws
-        self.engine_proc: subprocess.Popen | None = None
+        self.engine_proc: Optional[subprocess.Popen] = None
         self.board = chess.Board()
         self.moves: list[str] = []
 
@@ -34,7 +35,7 @@ class GameState:
             raise FileNotFoundError(
                 f"Rust binary not found at {RUST_BINARY}. Run: make build"
             )
-        eval_cmd = f"python {EVAL_SERVER} {self.eval_path}"
+        eval_cmd = f"python3 {EVAL_SERVER} {self.eval_path}"
         self.engine_proc = subprocess.Popen(
             [str(RUST_BINARY), "--eval-server", eval_cmd],
             stdin=subprocess.PIPE,
@@ -61,17 +62,18 @@ class GameState:
             if line == token:
                 return lines
 
-    def get_best_move(self, movetime_ms: int = 500) -> tuple[str, int, str]:
-        """Return (best_move_uci, eval_cp, pv)."""
+    def get_best_move(self, movetime_ms: int = 500) -> tuple[str, int, str, int]:
+        """Return (best_move_uci, eval_cp, pv, depth)."""
         position_cmd = "position startpos"
         if self.moves:
             position_cmd += " moves " + " ".join(self.moves)
         self._send(position_cmd)
-        self._send(f"go movetime {movetime_ms}")
+        self._send(f"go movetime {movetime_ms} depth 4")
 
         best_move = ""
         eval_cp = 0
         pv = ""
+        depth = 0
 
         while True:
             line = self.engine_proc.stdout.readline().strip()
@@ -79,6 +81,8 @@ class GameState:
                 parts = line.split()
                 try:
                     eval_cp = int(parts[parts.index("cp") + 1])
+                    if "depth" in parts:
+                        depth = int(parts[parts.index("depth") + 1])
                     if "pv" in parts:
                         pv = " ".join(parts[parts.index("pv") + 1:])
                 except (ValueError, IndexError):
@@ -87,7 +91,7 @@ class GameState:
                 best_move = line.split()[1]
                 break
 
-        return best_move, eval_cp, pv
+        return best_move, eval_cp, pv, depth
 
     def stop(self):
         if self.engine_proc:
@@ -151,7 +155,7 @@ async def handle_move(game_id: str, move_uci: str, philosophy: str):
     pre_engine_fen = state.board.fen()
 
     # Ask the engine for its response
-    best_move, eval_cp, pv = await asyncio.to_thread(state.get_best_move)
+    best_move, eval_cp, pv, depth = await asyncio.to_thread(state.get_best_move)
     if not best_move or best_move == "0000":
         return
 
@@ -161,15 +165,19 @@ async def handle_move(game_id: str, move_uci: str, philosophy: str):
     except Exception:
         pass
 
-    white_prob = centipawns_to_prob(eval_cp)
+    # eval_cp is from the engine's perspective (engine plays Black).
+    # Convert to White's perspective so both white_prob and eval_cp share the same sign convention.
+    eval_cp_white = -eval_cp
+    white_prob = centipawns_to_prob(eval_cp_white)
     commentary = await get_commentary(philosophy, best_move, pre_engine_fen, eval_cp)
 
     payload = {
         "best_move": best_move,
         "fen": state.board.fen(),
-        "eval_cp": eval_cp,
+        "eval_cp": eval_cp_white,
         "white_prob": white_prob,
         "pv": pv,
+        "depth": depth,
         "commentary": commentary,
     }
 

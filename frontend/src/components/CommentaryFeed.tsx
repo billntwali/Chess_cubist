@@ -11,12 +11,17 @@ export default function CommentaryFeed({ lines }: Props) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [lines]);
 
+  if (lines.length === 0) return null;
+
   return (
-    <div className="commentary-feed">
-      {lines.map((line, i) => (
-        <p key={i} className="commentary-line">{line}</p>
-      ))}
-      <div ref={bottomRef} />
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+      <div className="commentary-label">Commentary</div>
+      <div className="commentary-feed">
+        {lines.map((line, i) => (
+          <p key={i} className="commentary-line">{line}</p>
+        ))}
+        <div ref={bottomRef} />
+      </div>
     </div>
   );
 }
