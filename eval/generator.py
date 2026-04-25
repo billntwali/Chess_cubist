@@ -55,6 +55,16 @@ def interpret(description: str) -> str:
     return msg.content[0].text.strip()
 
 
+def _strip_markdown(code: str) -> str:
+    """Remove markdown code fences if Claude wrapped the response in them."""
+    lines = code.strip().splitlines()
+    if lines and lines[0].startswith("```"):
+        lines = lines[1:]
+    if lines and lines[-1].strip() == "```":
+        lines = lines[:-1]
+    return "\n".join(lines).strip()
+
+
 def generate(interpreted: str) -> str:
     """Step 2: generate a Python evaluate() function from the interpreted description."""
     msg = _client.messages.create(
@@ -62,7 +72,7 @@ def generate(interpreted: str) -> str:
         max_tokens=1024,
         messages=[{"role": "user", "content": CODEGEN_PROMPT.format(interpreted=interpreted)}],
     )
-    return msg.content[0].text.strip()
+    return _strip_markdown(msg.content[0].text)
 
 
 def validate(code: str) -> tuple[bool, str]:
