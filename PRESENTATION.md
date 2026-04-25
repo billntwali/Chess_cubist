@@ -61,6 +61,30 @@ That's Chess Forge.
 - **Pipeline tester** — `make agent` runs 5 automated checks end-to-end: build, eval server, generator, UCI handshake, 3 live games
 - **Prompt iteration logged** — every prompt is in `prompts/` with iteration notes. The AI usage story is documented, not just claimed
 
+**We measured prompt quality rigorously:**
+
+![EGRI — Prompt Iteration History](quality_metrics_egri.png)
+
+Started at 40% all-gates pass rate. Six prompt iterations — each failure annotated with the exact bug (used `random`, iterated over `board.king()`, etc.). Landed at 100% with a retry loop. This is what "critically evaluate AI-generated code" actually looks like.
+
+---
+
+## Results
+
+![Quality Metrics Summary](quality_metrics_summary.png)
+
+**Personalities are provably distinct:**
+
+![Philosophy-Play Alignment](quality_metrics_ppar.png)
+
+Petrosian scores −60cp vs. Classic on attack positions — it genuinely avoids tactical complications. Karpov and Tal score higher on structure positions. The evals aren't just different code — they produce measurably different chess.
+
+**Tournament standings:**
+
+![Tournament](quality_metrics_tournament.png)
+
+Tal wins (10pts). Petrosian second (8pts). The "Coward" personality scores 0 — which is the point. Personalities are real.
+
 ---
 
 ## Demo
