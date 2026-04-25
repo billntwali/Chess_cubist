@@ -1,0 +1,66 @@
+{
+  "timestamp": "2026-04-24T20:43:03.141124",
+  "summary": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 1
+  },
+  "checks": [
+    {
+      "name": "build_check",
+      "passed": true,
+      "details": "binary found",
+      "duration_ms": 0
+    },
+    {
+      "name": "eval_check",
+      "passed": true,
+      "details": "classic=+0cp  tal=+0cp  karpov=+0cp  petrosian=+0cp",
+      "duration_ms": 230,
+      "scores": {
+        "classic": 0,
+        "tal": 0,
+        "karpov": 0,
+        "petrosian": 0
+      }
+    },
+    {
+      "name": "generator_check",
+      "passed": true,
+      "details": "SKIPPED \u2014 ANTHROPIC_API_KEY not set",
+      "duration_ms": 0,
+      "skipped": true
+    },
+    {
+      "name": "uci_check",
+      "passed": true,
+      "details": "bestmove a2a3",
+      "duration_ms": 113,
+      "move": "a2a3"
+    },
+    {
+      "name": "pipeline_check",
+      "passed": true,
+      "details": "classic vs tal: white  |  karpov vs classic: white  |  tal vs petrosian: white",
+      "duration_ms": 2325074,
+      "games": [
+        {
+          "white": "classic",
+          "black": "tal",
+          "result": "white"
+        },
+        {
+          "white": "karpov",
+          "black": "classic",
+          "result": "white"
+        },
+        {
+          "white": "tal",
+          "black": "petrosian",
+          "result": "white"
+        }
+      ]
+    }
+  ]
+}
