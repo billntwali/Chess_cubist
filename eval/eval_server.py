@@ -29,7 +29,12 @@ if __name__ == "__main__":
             print(_cache[line], flush=True)
             continue
         try:
-            score = int(evaluate(chess.Board(line)))
+            board = chess.Board(line)
+            score = int(evaluate(board))
+            # evaluate() returns from White's perspective; negamax expects
+            # current-player perspective, so negate when it's Black to move.
+            if board.turn == chess.BLACK:
+                score = -score
             _cache[line] = score
             print(score, flush=True)
         except Exception as e:
