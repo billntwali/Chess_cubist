@@ -67,6 +67,16 @@ That's Chess Forge.
 
 > **Eval Generation Reliability Index (EGRI)** — two bars per prompt version: grey = syntax pass rate, green = all 5 validation gates pass rate. Calculated as `(functions passing all gates) / (total generation attempts)` across 20 sample generations per round. Each annotation names the exact bug class that caused failures at that version. Starts at 40% (v1) and reaches 100% (v2 + retry loop) after six prompt iterations. Higher is better — a flat green bar at 100% means the codegen prompt is fully hardened against known failure modes.
 
+
+
+## Demo
+
+`make dev` → type a philosophy → Generate → Play → Tournament
+
+**Closer:**
+> *"One text box. Any chess personality you can describe. Claude writes the brain, the Rust engine plays it, and Claude narrates every move in character. That's Chess Forge."*
+
+---
 ---
 
 ## Results
@@ -100,15 +110,6 @@ That's Chess Forge.
 ![Tournament](quality_metrics_tournament.png)
 
 > **Tournament Standings** — bar chart of final points (Win = 2, Draw = 1, Loss = 0) from a round-robin where every engine plays every other engine twice. Points = `W × 2 + D`. Loaded directly from `tournament/results/{session_id}.json`. The Coward engine (user-generated, over-penalizes aggression) scoring 0 is the intended result — it validates that personality differences are large enough to determine game outcomes, not just evaluation scores.
-
----
-
-## Demo
-
-`make dev` → type a philosophy → Generate → Play → Tournament
-
-**Closer:**
-> *"One text box. Any chess personality you can describe. Claude writes the brain, the Rust engine plays it, and Claude narrates every move in character. That's Chess Forge."*
 
 ---
 
