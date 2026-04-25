@@ -144,6 +144,16 @@ One-line demo close:
 
 > One text box. Any chess personality. Claude writes the brain, Rust plays the chess, and the tournament proves whether the personality actually behaves differently.
 
+### Live UI Screens
+
+![Personality generation screen](demo_ui_generate.png)
+
+This view shows the generation flow: the user enters a personality prompt, Claude interprets it, and the app prepares a validated eval function for the engine.
+
+![Live game with probability and commentary](demo_ui_play.png)
+
+This view shows the live game flow: the generated engine plays moves, the probability bar updates from centipawn evaluation, and commentary explains moves in personality voice.
+
 ---
 
 ## 4. Chess Engine Core & Protocols and Foundations
