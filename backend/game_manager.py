@@ -21,6 +21,64 @@ _games: dict[str, "GameState"] = {}
 _pending: dict[str, tuple[str, str]] = {}  # game_id -> (eval_path, philosophy)
 
 
+def _white_prob_from_result(result: str) -> float:
+    if result == "1-0":
+        return 1.0
+    if result == "0-1":
+        return 0.0
+    return 0.5
+
+
+def _eval_cp_from_result(result: str) -> int:
+    if result == "1-0":
+        return 900_000
+    if result == "0-1":
+        return -900_000
+    return 0
+
+
+def _board_result_payload(board: chess.Board) -> dict | None:
+    """Return standardized game-over payload fields if board is terminal."""
+    outcome = board.outcome(claim_draw=True)
+    if outcome is None:
+        return None
+
+    result = outcome.result()
+    termination = outcome.termination.name.lower()
+    termination_label = termination.replace("_", " ").title()
+
+    if outcome.winner is None:
+        winner = None
+        result_text = f"{termination_label} — Draw"
+    else:
+        winner = "white" if outcome.winner else "black"
+        if termination == "checkmate":
+            result_text = f"Checkmate — {winner.title()} wins"
+        else:
+            result_text = f"{termination_label} — {winner.title()} wins"
+
+    return {
+        "game_over": True,
+        "result": result,
+        "winner": winner,
+        "termination": termination,
+        "result_text": result_text,
+    }
+
+
+def _forfeit_payload(loser: str) -> dict:
+    loser = loser.lower()
+    winner = "black" if loser == "white" else "white"
+    result = "0-1" if winner == "black" else "1-0"
+    return {
+        "game_over": True,
+        "result": result,
+        "winner": winner,
+        "termination": "forfeit",
+        "result_text": f"{loser.title()} resigned — {winner.title()} wins",
+    }
+
+
 class GameState:
     def __init__(self, game_id: str, eval_path: str, player_ws: WebSocket):
         self.game_id = game_id
@@ -133,24 +191,53 @@ async def run_game_ws(game_id: str, ws: WebSocket):
     try:
         while True:
             data = await ws.receive_json()
+            action = data.get("action")
+            if action == "forfeit":
+                await handle_forfeit(game_id, loser="white")
+                break
+
             move_uci = data.get("move")
             if move_uci:
-                await handle_move(game_id, move_uci, philosophy)
+                finished = await handle_move(game_id, move_uci, philosophy)
+                if finished:
+                    break
     except (WebSocketDisconnect, Exception):
+        pass
+    finally:
         end_game(game_id)
+        try:
+            await ws.close()
+        except Exception:
+            pass
 
 
 async def handle_move(game_id: str, move_uci: str, philosophy: str):
     state = _games.get(game_id)
     if state is None:
-        return
+        return False
 
     # Apply player's move to our board tracker
     try:
         state.board.push_uci(move_uci)
     except Exception:
-        return  # Illegal move — ignore
+        return False  # Illegal move — ignore
     state.moves.append(move_uci)
+
+    # Player may have delivered checkmate/stalemate/etc.
+    game_over = _board_result_payload(state.board)
+    if game_over:
+        result = game_over["result"]
+        payload = {
+            "fen": state.board.fen(),
+            "eval_cp": _eval_cp_from_result(result),
+            "white_prob": _white_prob_from_result(result),
+            "pv": "",
+            "depth": 0,
+            **game_over,
+        }
+        await state.player_ws.send_json(payload)
+        await hub.broadcast(game_id, payload)
+        return True
 
     # Snapshot FEN for commentary (position the engine is responding to)
     pre_engine_fen = state.board.fen()
@@ -158,7 +245,22 @@ async def handle_move(game_id: str, move_uci: str, philosophy: str):
     # Ask the engine for its response
     best_move, eval_cp, pv, depth = await asyncio.to_thread(state.get_best_move)
     if not best_move or best_move == "0000":
-        return
+        game_over = _board_result_payload(state.board)
+        if game_over:
+            result = game_over["result"]
+            payload = {
+                "fen": state.board.fen(),
+                "eval_cp": _eval_cp_from_result(result),
+                "white_prob": _white_prob_from_result(result),
+                "pv": "",
+                "depth": 0,
+                **game_over,
+            }
+            await state.player_ws.send_json(payload)
+            await hub.broadcast(game_id, payload)
+            return True
+        await state.player_ws.send_json({"error": "Engine returned no legal move."})
+        return False
 
     state.moves.append(best_move)
     try:
@@ -166,8 +268,8 @@ async def handle_move(game_id: str, move_uci: str, philosophy: str):
     except Exception:
         pass
 
-    # eval_cp is from the engine's perspective (engine plays Black).
-    # Convert to White's perspective so both white_prob and eval_cp share the same sign convention.
+    # eval_cp is from side-to-move perspective in negamax logs. Engine move was by Black,
+    # so this value maps to Black's perspective at root; invert for White perspective.
     eval_cp_white = -eval_cp
     white_prob = centipawns_to_prob(eval_cp_white)
     commentary = await get_commentary(philosophy, best_move, pre_engine_fen, eval_cp)
@@ -182,6 +284,34 @@ async def handle_move(game_id: str, move_uci: str, philosophy: str):
         "commentary": commentary,
     }
 
+    game_over = _board_result_payload(state.board)
+    if game_over:
+        result = game_over["result"]
+        payload.update(game_over)
+        payload["eval_cp"] = _eval_cp_from_result(result)
+        payload["white_prob"] = _white_prob_from_result(result)
+
+    await state.player_ws.send_json(payload)
+    await hub.broadcast(game_id, payload)
+    return bool(game_over)
+
+
+async def handle_forfeit(game_id: str, loser: str = "white"):
+    state = _games.get(game_id)
+    if state is None:
+        return
+
+    game_over = _forfeit_payload(loser)
+    result = game_over["result"]
+    payload = {
+        "fen": state.board.fen(),
+        "eval_cp": _eval_cp_from_result(result),
+        "white_prob": _white_prob_from_result(result),
+        "pv": "",
+        "depth": 0,
+        "commentary": game_over["result_text"],
+        **game_over,
+    }
     await state.player_ws.send_json(payload)
     await hub.broadcast(game_id, payload)
 

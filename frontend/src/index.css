@@ -114,6 +114,18 @@ header {
   padding: 16px 24px;
 }
 
+.game-over-banner {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 77, 109, 0.45);
+  background: rgba(255, 77, 109, 0.1);
+  color: #ffc0cd;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
 /* ── Buttons ── */
 .btn-primary {
   width: 100%;
@@ -155,6 +167,34 @@ header {
 }
 
 .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-danger {
+  width: 100%;
+  padding: 10px 20px;
+  background: rgba(255, 77, 109, 0.12);
+  color: #ff9cb0;
+  border: 1px solid rgba(255, 77, 109, 0.45);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(255, 77, 109, 0.2);
+  border-color: rgba(255, 77, 109, 0.75);
+  color: #ffc0cd;
+}
+
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.game-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
 /* ── Philosophy Input ── */
 .philosophy-input { display: flex; flex-direction: column; gap: 8px; }
@@ -314,6 +354,12 @@ header {
   font-size: 12px;
   color: var(--accent);
   font-weight: 500;
+}
+
+.engine-thinking-bar.game-over {
+  background: rgba(255, 77, 109, 0.12);
+  border-color: rgba(255, 77, 109, 0.45);
+  color: #ffb5c5;
 }
 
 .thinking-dot {

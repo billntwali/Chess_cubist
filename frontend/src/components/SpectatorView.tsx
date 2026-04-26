@@ -12,6 +12,9 @@ export default function SpectatorView({ gameId }: Props) {
   const [whiteProb, setWhiteProb] = useState(0.5);
   const [commentary, setCommentary] = useState<string[]>([]);
   const [connected, setConnected] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [resultText, setResultText] = useState("");
+  const [showCommentary, setShowCommentary] = useState(true);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -22,6 +25,14 @@ export default function SpectatorView({ gameId }: Props) {
       if (data.fen) setFen(data.fen);
       if (data.white_prob !== undefined) setWhiteProb(data.white_prob);
       if (data.commentary) setCommentary((c) => [...c, data.commentary]);
+      if (data.game_over) {
+        const status = data.result_text || "Game over";
+        setGameOver(true);
+        setResultText(status);
+        if (!data.commentary) {
+          setCommentary((c) => [...c, status]);
+        }
+      }
     };
     ws.onclose = () => setConnected(false);
     wsRef.current = ws;
@@ -33,12 +44,13 @@ export default function SpectatorView({ gameId }: Props) {
       <header>
         <div className="header-logo">♟ Chess Forge</div>
         <div className="philosophy-badge">
-          {connected ? "Spectating live" : "Connecting…"}
+          {gameOver ? resultText : connected ? "Spectating live" : "Connecting…"}
         </div>
       </header>
 
       <div className="center-panel" style={{ margin: "0 auto" }}>
         <WinProbBar whiteProb={whiteProb} />
+        {gameOver && <div className="game-over-banner">{resultText}</div>}
         <div className="board-wrapper">
           <Chessboard
             position={fen}
@@ -60,7 +72,7 @@ export default function SpectatorView({ gameId }: Props) {
       </div>
 
       <div className="right-panel">
-        <CommentaryFeed lines={commentary} />
+        {showCommentary && <CommentaryFeed lines={commentary} onClose={() => setShowCommentary(false)} />}
       </div>
     </div>
   );

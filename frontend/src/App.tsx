@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Board from "./components/Board";
 import CommentaryFeed from "./components/CommentaryFeed";
 import EngineInfo from "./components/EngineInfo";
@@ -27,11 +27,19 @@ export default function App() {
   const [tournamentRunning, setTournamentRunning] = useState(false);
   const [thinking, setThinking] = useState(false);
   const [playerTurn, setPlayerTurn] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [resultText, setResultText] = useState("");
   const [showEngineInfo, setShowEngineInfo] = useState(true);
   const [showCommentary, setShowCommentary] = useState(true);
   const wsRef = useRef<WebSocket | null>(null);
 
+  useEffect(() => {
+    return () => wsRef.current?.close();
+  }, []);
+
   function handleEvalReady(path: string, _code: string, desc: string) {
+    wsRef.current?.close();
+    wsRef.current = null;
     setEvalPath(path);
     setPhilosophy(desc);
     setGameId(null);
@@ -42,6 +50,12 @@ export default function App() {
     setEvalCp(0);
     setPv("");
     setDepth(0);
+    setViewerCount(0);
+    setGameOver(false);
+    setResultText("");
+    setThinking(false);
+    setShowEngineInfo(true);
+    setShowCommentary(true);
   }
 
   async function startGame() {
@@ -54,21 +68,45 @@ export default function App() {
       if (!res.ok) { alert(`Failed to start game: ${await res.text()}`); return; }
       const { game_id } = await res.json();
       setGameId(game_id);
+      setFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+      setCommentary([]);
+      setWhiteProb(0.5);
+      setEvalCp(0);
+      setPv("");
+      setDepth(0);
+      setViewerCount(0);
+      setGameOver(false);
+      setResultText("");
 
       setPlayerTurn(true);
+      wsRef.current?.close();
       const ws = new WebSocket(`ws://${window.location.host}/ws/game/${game_id}`);
       ws.onmessage = (e) => {
         const data = JSON.parse(e.data);
         if (data.viewer_count !== undefined) { setViewerCount(data.viewer_count); return; }
-        if (data.error) { alert(`Engine error: ${data.error}`); return; }
+        if (data.error) { alert(`Engine error: ${data.error}`); setThinking(false); return; }
         if (data.fen) setFen(data.fen);
         if (data.eval_cp !== undefined) setEvalCp(data.eval_cp);
         if (data.white_prob !== undefined) setWhiteProb(data.white_prob);
-        if (data.pv) setPv(data.pv);
-        if (data.depth) setDepth(data.depth);
+        if (data.pv !== undefined) setPv(data.pv);
+        if (data.depth !== undefined) setDepth(data.depth);
         if (data.commentary) setCommentary((c) => [...c, data.commentary]);
+        if (data.game_over) {
+          const status = data.result_text || "Game over";
+          setGameOver(true);
+          setResultText(status);
+          if (!data.commentary) {
+            setCommentary((c) => [...c, status]);
+          }
+          setThinking(false);
+          setPlayerTurn(false);
+          return;
+        }
         setThinking(false);
         setPlayerTurn(true);
+      };
+      ws.onclose = () => {
+        setThinking(false);
       };
       ws.onerror = () => alert("WebSocket connection failed — is the backend running?");
       wsRef.current = ws;
@@ -78,9 +116,17 @@ export default function App() {
   }
 
   function handleMove(moveUci: string) {
+    if (!wsRef.current || gameOver) return;
     setThinking(true);
     setPlayerTurn(false);
     wsRef.current?.send(JSON.stringify({ move: moveUci }));
+  }
+
+  function forfeitGame() {
+    if (!wsRef.current || !gameId || gameOver) return;
+    wsRef.current.send(JSON.stringify({ action: "forfeit" }));
+    setThinking(false);
+    setPlayerTurn(false);
   }
 
   async function runTournament() {
@@ -122,15 +168,21 @@ export default function App() {
           <button className="btn-primary" onClick={startGame}>▶ Play</button>
         )}
         {gameId && (
-          <button className="btn-secondary" onClick={runTournament} disabled={tournamentRunning}>
-            {tournamentRunning ? "⏳ Running tournament…" : "⚔ Run Tournament"}
-          </button>
+          <div className="game-controls">
+            <button className="btn-secondary" onClick={runTournament} disabled={tournamentRunning}>
+              {tournamentRunning ? "⏳ Running tournament…" : "⚔ Run Tournament"}
+            </button>
+            <button className="btn-danger" onClick={forfeitGame} disabled={gameOver}>
+              🚩 Forfeit
+            </button>
+          </div>
         )}
         <TournamentResults standings={tournamentStandings} />
       </div>
 
       <div className="center-panel">
         <WinProbBar whiteProb={whiteProb} />
+        {gameOver && <div className="game-over-banner">{resultText}</div>}
         <Board
           gameId={gameId}
           onMove={handleMove}
@@ -138,6 +190,8 @@ export default function App() {
           playerColor="white"
           thinking={thinking}
           playerTurn={playerTurn}
+          gameOver={gameOver}
+          resultText={resultText}
         />
         {showEngineInfo && <EngineInfo depth={depth} evalCp={evalCp} pv={pv} onClose={() => setShowEngineInfo(false)} />}
         <SpectatorRoom gameId={gameId} viewerCount={viewerCount} />

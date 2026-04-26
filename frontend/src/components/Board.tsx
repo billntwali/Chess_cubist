@@ -9,9 +9,20 @@ interface Props {
   playerColor: "white" | "black";
   thinking: boolean;
   playerTurn: boolean;
+  gameOver: boolean;
+  resultText: string;
 }
 
-export default function Board({ gameId, onMove, fen, playerColor, thinking, playerTurn }: Props) {
+export default function Board({
+  gameId,
+  onMove,
+  fen,
+  playerColor,
+  thinking,
+  playerTurn,
+  gameOver,
+  resultText,
+}: Props) {
   const [displayFen, setDisplayFen] = useState(fen);
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [legalSquares, setLegalSquares] = useState<string[]>([]);
@@ -28,6 +39,7 @@ export default function Board({ gameId, onMove, fen, playerColor, thinking, play
   }
 
   function makeMove(from: string, to: string) {
+    if (thinking || !playerTurn || gameOver) return false;
     const chess = new Chess(displayFen);
     const move = chess.move({ from: from as any, to: to as any, promotion: "q" });
     if (!move) return false;
@@ -39,7 +51,7 @@ export default function Board({ gameId, onMove, fen, playerColor, thinking, play
   }
 
   function onSquareClick(square: string) {
-    if (!gameId) return;
+    if (!gameId || thinking || !playerTurn || gameOver) return;
 
     // If a piece is selected and this is a legal target → make the move
     if (selectedSquare && legalSquares.includes(square)) {
@@ -64,7 +76,7 @@ export default function Board({ gameId, onMove, fen, playerColor, thinking, play
   }
 
   function onDrop(sourceSquare: string, targetSquare: string): boolean {
-    if (!gameId) return false;
+    if (!gameId || thinking || !playerTurn || gameOver) return false;
     return makeMove(sourceSquare, targetSquare);
   }
 
@@ -85,10 +97,10 @@ export default function Board({ gameId, onMove, fen, playerColor, thinking, play
 
   return (
     <div className="board-wrapper">
-      {(thinking || playerTurn) && (
-        <div className="engine-thinking-bar">
-          <span className="thinking-dot" />
-          {thinking ? "Engine is thinking…" : "Your move"}
+      {(gameOver || thinking || playerTurn) && (
+        <div className={`engine-thinking-bar ${gameOver ? "game-over" : ""}`.trim()}>
+          {!gameOver && <span className="thinking-dot" />}
+          {gameOver ? resultText || "Game over" : thinking ? "Engine is thinking…" : "Your move"}
         </div>
       )}
       <Chessboard
